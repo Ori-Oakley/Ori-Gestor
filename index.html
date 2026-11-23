@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f9f9f7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gastos">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; manifest-src 'self'; worker-src 'self'; form-action 'none'; base-uri 'none'">
+<title>Gastos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  color-scheme:light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --wash:rgba(11,11,11,.045);
+  --c-ing:#2a78d6; --c-gas:#eb6834; --c-sal:#1baf7a; --c-alt:#e87ba4; --c-rec:#6250d6; --c-amar:#eda100; --c-mag:#e87ba4;
+  --good:#0ca30c; --good-t:#006300; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --on-fill:#ffffff; --on-yellow:#0b0b0b;
+}
+@media (prefers-color-scheme:dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme:dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(255,255,255,.06);
+    --c-ing:#3987e5; --c-gas:#d95926; --c-sal:#199e70; --c-alt:#d55181; --c-rec:#9085e9; --c-amar:#c98500; --c-mag:#d55181;
+    --good-t:#0ca30c;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --wash:rgba(255,255,255,.06);
+  --c-ing:#3987e5; --c-gas:#d95926; --c-sal:#199e70; --c-alt:#d55181; --c-rec:#9085e9; --c-amar:#c98500; --c-mag:#d55181;
+  --good-t:#0ca30c;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 80px}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+header.top h1{font-size:22px;letter-spacing:-.01em}
+.sub{color:var(--ink2);font-size:13px}
+.lock{display:inline-flex;gap:6px;align-items:center;color:var(--ink2);font-size:12px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.btn:hover{background:var(--wash)}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.primary:hover{opacity:.88}
+.btn.small{padding:4px 9px;font-size:12px}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--c-ing);outline-offset:2px}
+nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--grid);margin:6px 0 16px;overflow:auto}
+nav.tabs button{background:none;border:0;padding:10px 14px;cursor:pointer;color:var(--ink2);border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.filters{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin:0 0 14px}
+.filters .grp{display:flex;align-items:center;gap:8px}
+.filters label.t{color:var(--ink2);font-size:12px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{background:none;border:0;padding:6px 11px;cursor:pointer;font-size:13px;border-right:1px solid var(--border)}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--wash)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card h3{font-size:15px;margin-bottom:2px}
+.card .desc{color:var(--ink2);font-size:12px;margin-bottom:10px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.hero{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:flex-end;justify-content:space-between}
+.hero .big{font-size:52px;line-height:1.05;font-weight:600;letter-spacing:-.02em}
+.hero .lbl{color:var(--ink2);font-size:13px;margin-bottom:4px}
+.hero .note{color:var(--ink2);font-size:13px}
+.tile .lbl{color:var(--ink2);font-size:12px;margin-bottom:6px}
+.tile .val{font-size:26px;font-weight:600;letter-spacing:-.01em}
+.tile .det{color:var(--ink2);font-size:12px;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;margin-top:8px}
+.chip i{font-style:normal;display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;font-size:10px;font-weight:700;color:#fff}
+.chip.good i{background:var(--good)} .chip.warn i{background:var(--warn);color:#0b0b0b} .chip.serious i{background:var(--serious);color:#0b0b0b} .chip.crit i{background:var(--crit)} .chip.na i{background:var(--muted)}
+.banner{border:1px solid var(--border);border-left:4px solid var(--warn);background:var(--surface);border-radius:8px;padding:10px 14px;margin:0 0 10px;font-size:13px}
+.banner.crit{border-left-color:var(--crit)} .banner.info{border-left-color:var(--c-ing)}
+.banner b{font-weight:600}
+.chartcard .head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink2);margin:2px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px}
+.swl{display:inline-block;width:16px;height:0;border-top:2px solid}
+.swl.d{border-top-style:dashed}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font:11px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--muted)}
+.chart text.ink{fill:var(--ink2)}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);border:1px solid var(--border);box-shadow:0 4px 18px rgba(0,0,0,.14);border-radius:8px;padding:8px 10px;font-size:12px;min-width:160px;display:none}
+.tip .tt{color:var(--ink2);margin-bottom:4px}
+.tip .row{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:2px}
+.tip .row .k{display:flex;align-items:center;gap:6px;color:var(--ink2)}
+.tip .row .v{font-weight:600;color:var(--ink)}
+.tip .ln{display:inline-block;width:12px;border-top:2px solid}
+table.t{width:100%;border-collapse:collapse;font-size:12.5px}
+table.t th,table.t td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--grid);white-space:nowrap}
+table.t th:first-child,table.t td:first-child{text-align:left}
+table.t th{color:var(--ink2);font-weight:500}
+.tscroll{overflow:auto;max-height:340px}
+.hbar{display:grid;grid-template-columns:150px 1fr 150px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.hbar .trk{height:10px}
+.hbar .fill{height:10px;border-radius:0 4px 4px 0;background:var(--c-gas)}
+.hbar .nm{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .vl{text-align:right;color:var(--ink2);font-size:12px}
+.hbar .vl b{color:var(--ink);font-weight:600}
+@media(max-width:600px){.hbar{grid-template-columns:100px 1fr 110px}}
+.alt{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--grid)}
+.alt:first-child{border-top:0}
+.alt h4{font-size:14px}
+.alt p{margin:3px 0 0;color:var(--ink2);font-size:13px}
+.alt .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pill{font-size:11.5px;border:1px solid var(--border);border-radius:99px;padding:2px 8px;color:var(--ink2);white-space:nowrap}
+.pill.rec{border-color:var(--ink);color:var(--ink);font-weight:600}
+.alt input[type=checkbox]{width:18px;height:18px;margin-top:2px;accent-color:var(--ink)}
+.alt .imp{text-align:right;white-space:nowrap}
+.alt .imp b{font-size:16px}
+.alt .imp span{display:block;color:var(--ink2);font-size:11.5px}
+form.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:12px;color:var(--ink2)}
+.fld input,.fld select{background:var(--page);border:1px solid var(--border);border-radius:8px;padding:7px 9px;width:100%}
+.fld.chk{flex-direction:row;align-items:center;gap:8px}
+.fld.chk input{width:auto}
+.stack>*+*{margin-top:14px}
+.muted{color:var(--ink2)}
+.sbar{display:flex;gap:2px;height:28px}
+.sbar div{border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:12px;font-weight:600;color:var(--on-fill);overflow:hidden;white-space:nowrap}
+.sbar div.y{color:var(--on-yellow)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:9px 14px;border-radius:8px;font-size:13px;z-index:60;display:none}
+details summary{cursor:pointer;color:var(--ink2)}
+.ro{opacity:.55}
+
+/* ---- cuentas, captura rápida y listas de movimientos ---- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip-b{border:1px solid var(--border);background:var(--surface);border-radius:99px;padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:40px}
+.chip-b:hover{background:var(--wash)}
+.chip-b[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.dotc{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 2px var(--surface)}
+.chip-b[aria-pressed="true"] .dotc{box-shadow:0 0 0 2px var(--ink)}
+.qcseg{width:100%;margin-bottom:12px}.qcseg button{flex:1;padding:10px 11px;font-size:15px}
+form.qf{display:flex;flex-direction:column;gap:12px}
+.amtw{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:12px;background:var(--page);padding:4px 14px}
+.amtw span{font-size:28px;color:var(--ink2)}
+.amtw input.amt{border:0;background:none;font-size:34px;font-weight:600;padding:8px 0;width:100%;min-width:0;outline:0}
+.amtw:focus-within{outline:2px solid var(--c-ing);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn.big{padding:14px 16px;font-size:16px;font-weight:600;border-radius:12px;width:100%}
+.mvs{display:flex;flex-direction:column}
+.mv{border-top:1px solid var(--grid);padding:10px 2px}
+.mv:first-child{border-top:0}
+.mv .row1{display:flex;justify-content:space-between;gap:12px;align-items:baseline;cursor:pointer;min-height:28px}
+.mv .c{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.mv .a{font-weight:600;white-space:nowrap}
+.mv .a.in{color:var(--good-t)}
+.mv .s{color:var(--ink2);font-size:12px;margin-top:1px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mv .edit{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end;background:var(--wash);border-radius:10px;padding:10px}
+.atile{text-align:left;cursor:pointer;width:100%}
+.atile:hover{background:var(--wash)}
+.atile[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:-1px}
+.atile .lbl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.synctxt{width:100%;background:var(--page);border:1px solid var(--border);border-radius:8px;padding:8px;font:12px/1.35 ui-monospace,Consolas,monospace;word-break:break-all}
+nav.tabs .ic{display:none}
+nav.tabs .sm{display:none}
+@media(max-width:680px){
+  .wrap{padding:12px 12px calc(88px + env(safe-area-inset-bottom))}
+  header.top h1{font-size:19px}
+  header.top{margin-bottom:6px}
+  .hero .big{font-size:40px}
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;margin:0;z-index:40;background:var(--surface);border-top:1px solid var(--border);border-bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding-bottom:env(safe-area-inset-bottom);overflow:visible}
+  nav.tabs button{padding:8px 2px 9px;font-size:11px;border-bottom:0;border-top:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:54px}
+  nav.tabs button[aria-selected="true"]{border-top-color:var(--ink)}
+  nav.tabs .ic{display:block;line-height:0}
+  nav.tabs .lg{display:none}nav.tabs .sm{display:inline}
+  .fld input,.fld select,.mv .edit select,.mv .edit input[type=text],.synctxt,textarea,.btn{font-size:16px}
+  .fld input,.fld select,.mv .edit select{min-height:44px}
+  .grid.gacc{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.gacc .tile .val{font-size:22px}.gacc .card{padding:12px}
+  .btn{min-height:42px}.btn.small{min-height:36px;font-size:13px}
+  .fld input[type=checkbox],.mv .edit input[type=checkbox]{min-height:0;width:22px;height:22px}
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom))}
+  .card{padding:14px}
+  form.f{grid-template-columns:1fr}
+  .filters{gap:10px 14px}
+  .seg button{padding:9px 11px}
+  .tip{max-width:80vw}
+}
+@media print{.tools,nav.tabs,.filters,.btn{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Gestor de gastos</h1>
+      <div class="sub"><span class="lock">🔒 Sin conexión: tus datos solo viven en este navegador.</span></div>
+    </div>
+    <div class="tools" id="tools"></div>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <main id="view"></main>
+</div>
+<div class="tip" id="tip" role="status"></div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+'use strict';
+/*ENGINE_START*/
+/* ---------- utilidades de fecha ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2],12,0,0)};
+const mkOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1);
+const mkParse=k=>{const a=k.split('-').map(Number);return{y:a[0],m:a[1]}};
+const mkAdd=(k,n)=>{const p=mkParse(k);const t=p.y*12+(p.m-1)+n;return Math.floor(t/12)+'-'+pad(t%12+1)};
+const mkDiff=(a,b)=>{const A=mkParse(a),B=mkParse(b);return(B.y*12+B.m)-(A.y*12+A.m)};
+const daysIn=k=>{const p=mkParse(k);return new Date(p.y,p.m,0).getDate()};
+const daysBetween=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
+const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MESL=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const mkLabel=(k,withYear)=>{const p=mkParse(k);return MES[p.m-1]+(withYear?' '+String(p.y).slice(2):'')};
+const mkLong=k=>{const p=mkParse(k);return MESL[p.m-1]+' '+p.y};
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const nextWd=(s,wd)=>{let d=parse(s);while(d.getDay()!==wd)d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,12);return iso(d)};
+function paydays(k,wd){const p=mkParse(k),n=daysIn(k),out=[];for(let d=1;d<=n;d++){const dt=new Date(p.y,p.m-1,d,12);if(dt.getDay()===wd)out.push(iso(dt))}return out}
+
+/* ---------- catálogo ---------- */
+const CATS=[
+ {id:'vivienda',n:'Vivienda',e:1},{id:'alimentos',n:'Alimentación',e:1},{id:'transporte',n:'Transporte',e:1},
+ {id:'servicios',n:'Servicios, seguros y telefonía',e:1},{id:'salud',n:'Salud',e:1},{id:'educacion',n:'Educación',e:1},
+ {id:'deudas',n:'Tarjetas, créditos y deudas',e:1},{id:'gobierno',n:'Impuestos y gobierno',e:1},
+ {id:'efectivo',n:'Retiros de efectivo',e:0},{id:'ocio',n:'Ocio y restaurantes',e:0},{id:'suscripciones',n:'Suscripciones',e:0},
+ {id:'compras',n:'Compras personales',e:0},{id:'otros',n:'Otros',e:0}];
+const catName=id=>(CATS.find(c=>c.id===id)||{n:id}).n;
+const catEss=id=>{const c=CATS.find(c=>c.id===id);return c?!!c.e:false};
+const FREQ={semanal:52/12,quincenal:2,mensual:1,bimestral:.5,anual:1/12};
+
+/*SEED_START*/
+const BUILD_MOVIL=true;
+const COBERTURA={desde:null,hasta:null,huecos:[]};
+const SEED_NOM=[],SEED_EXTRA=[],NOM_INFO=null,SEED_SALDOS=[],SEED_RECUR=[],SEED_BANK={gastos:[],ingresos:[],movs:[]};
+/*SEED_END*/
+
+const CUENTAS0=[{n:'Banamex',t:'debito'},{n:'Nu',t:'credito'},{n:'Plata',t:'credito'},{n:'Efectivo',t:'efectivo'}];
+const CTIPOS={debito:'Cuenta de débito',credito:'Tarjeta de crédito',efectivo:'Efectivo'};
+/* completa campos nuevos en respaldos y datos guardados con versiones anteriores */
+function migrate(o){
+  const s=o.settings||(o.settings={});
+  if(!Array.isArray(s.cuentas)||!s.cuentas.length)s.cuentas=CUENTAS0.map(c=>Object.assign({},c));
+  ['gastos','ingresos','recurrentes','eventos','movimientos','saldos','alternativas'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
+  o.gastos.forEach(g=>{if(g.cuenta==null)g.cuenta=g.src==='banco'?'Banamex':''});
+  o.ingresos.forEach(i=>{if(i.cuenta==null)i.cuenta=i.banco?'Banamex':''});
+  o.recurrentes.forEach(r=>{if(r.cuenta==null)r.cuenta=/^r\d/.test(r.id||'')?'Banamex':''});
+  return o}
+function seedState(){
+  const ing=[];
+  SEED_NOM.forEach((r,i)=>ing.push({id:'n'+i,fecha:r[0],tipo:'nomina',concepto:'Nómina semanal',bruto:r[1],ded:r[2],neto:r[3],vales:r[4],imp:r[5],imss:r[6],caja:r[7],foah:r[8],amort:r[9]}));
+  SEED_EXTRA.forEach((r,i)=>ing.push({id:'x'+i,fecha:r[0],tipo:'extra',concepto:r[1],bruto:r[2],imp:r[3],neto:r[4]}));
+  SEED_BANK.ingresos.forEach((r,i)=>ing.push({id:'bi'+i,fecha:r.fecha,tipo:'extra',concepto:r.concepto,neto:r.neto,banco:1}));
+  return migrate({v:2,
+    settings:{saldo:null,metaAhorro:10,mesesFondo:3,umbralHormiga:100,estimarFaltantes:true,incluirVales:false,deudasVar:'incluir',ocultar:false,tema:'auto',horizonte:3,escenario:'base',ventana:6,
+      cobertura:JSON.parse(JSON.stringify(COBERTURA))},
+    ingresos:ing,
+    gastos:SEED_BANK.gastos.map(g=>Object.assign({},g,{src:'banco'})),
+    recurrentes:SEED_RECUR.map((r,i)=>Object.assign({id:'r'+i,fin:null},r)),
+    eventos:[],alternativas:[],movimientos:SEED_BANK.movs.slice(),saldos:SEED_SALDOS.slice(),nomInfo:NOM_INFO?Object.assign({},NOM_INFO):null});
+}
+
+/* ---------- recurrentes ---------- */
+function occRec(r,k){
+  const ini=parse(r.inicio),fin=r.fin?parse(r.fin):null,out=[],nd=daysIn(k),p=mkParse(k);
+  const push=dt=>{if(dt>=ini&&(!fin||dt<=fin))out.push(dt)};
+  const D=d=>new Date(p.y,p.m-1,d,12);
+  switch(r.frecuencia){
+    case'semanal':for(let d=1;d<=nd;d++){const dt=D(d);if(dt.getDay()===ini.getDay())push(dt)}break;
+    case'quincenal':{const b=ini.getDate(),c=b<=15?b+15:b-15;[...new Set([Math.min(b,nd),Math.min(c,nd)])].forEach(d=>push(D(d)));break}
+    case'mensual':push(D(Math.min(ini.getDate(),nd)));break;
+    case'bimestral':{const df=mkDiff(mkOf(ini),k);if(df>=0&&df%2===0)push(D(Math.min(ini.getDate(),nd)));break}
+    case'anual':if(ini.getMonth()===p.m-1)push(D(Math.min(ini.getDate(),nd)));break;
+  }
+  return out;
+}
+
+/* ---------- ajuste de tendencia (mínimos cuadrados con amortiguación) ---------- */
+function fitSeries(pts,targets){
+  const n=pts.length;
+  if(!n)return{n:0,mean:0,level:0,slope:0,slopePct:0,sigma:0,proj:targets.map(()=>0),band:targets.map(()=>0)};
+  const ys=pts.map(p=>p.y),xs=pts.map(p=>p.x),mean=avg(ys),xm=avg(xs);
+  let sxx=0,sxy=0;pts.forEach(p=>{sxx+=(p.x-xm)**2;sxy+=(p.x-xm)*(p.y-mean)});
+  let b=(n>=2&&sxx>0)?sxy/sxx:0;
+  b*=(n>=5?1:n===4?.85:n===3?.7:.5);
+  const cap=.12*Math.abs(mean);b=Math.max(-cap,Math.min(cap,b));
+  const a=mean-b*xm,xLast=Math.max.apply(null,xs),lvl=a+b*xLast;
+  let sse=0;pts.forEach(p=>{const e=p.y-(a+b*p.x);sse+=e*e});
+  let s=n>2?Math.sqrt(sse/(n-2)):.1*Math.abs(mean);s=Math.max(s,.05*Math.abs(mean));
+  const phi=.75,proj=[],band=[];
+  targets.forEach(x=>{
+    const d=Math.max(0,x-xLast),damp=d>0?phi*(1-Math.pow(phi,d))/(1-phi):0;
+    const y=x<=xLast?a+b*x:lvl+b*damp;proj.push(Math.max(0,y));
+    const dx=x-xm;let w=s*Math.sqrt(1+1/n+(sxx>0?dx*dx/sxx:0));w=Math.min(w,Math.max(.6*Math.abs(lvl),.05*Math.abs(mean)));band.push(w);
+  });
+  return{n,mean,level:lvl,slope:b,slopePct:mean?b/mean:0,sigma:s,proj,band,xLast};
+}
+
+/* ---------- cobertura de gastos ---------- */
+function covered(S,k){
+  const c=S.settings.cobertura;if(!c||!c.desde)return null;
+  const ms=k+'-01',me=k+'-'+pad(daysIn(k));
+  if(ms<c.desde||me>c.hasta)return false;
+  for(const h of(c.huecos||[]))if(!(me<h[0]||ms>h[1]))return false;
+  return true;
+}
+
+/* ---------- modelo ---------- */
+function buildModel(S,todayD){
+  const st=S.settings,today=iso(todayD),cur=mkOf(todayD),H=st.horizonte,W=st.ventana;
+  const nom=S.ingresos.filter(i=>i.tipo==='nomina').sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:0);
+  const wd=nom.length?parse(nom[nom.length-1].fecha).getDay():0;
+  const net=i=>(i.neto||0)+((st.incluirVales&&i.tipo==='nomina')?(i.vales||0):0);
+  const base=avg(nom.slice(-8).map(net));
+  let incTrend=null;
+  if(nom.length>=8){const r4=avg(nom.slice(-4).map(net)),p=avg(nom.slice(-12,-4).map(net));if(p>0)incTrend=r4/p-1}
+  /* semanas sin recibo */
+  const estIng={},estDates=[];
+  if(st.estimarFaltantes&&nom.length){
+    const have=new Set(nom.map(i=>nextWd(i.fecha,wd)));
+    let d=parse(nextWd(nom[0].fecha,wd));const miss=[];
+    while(iso(d)<=today){if(!have.has(iso(d)))miss.push(iso(d));d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7,12)}
+    const lastNom=nom[nom.length-1].fecha;let run=[];
+    const flush=()=>{if(!run.length)return;const tr=run[run.length-1]>lastNom;if(tr||run.length<=6)run.forEach(x=>{const k=x.slice(0,7);estIng[k]=(estIng[k]||0)+base;estDates.push(x)});run=[]};
+    miss.forEach(x=>{if(run.length&&daysBetween(run[run.length-1],x)!==7)flush();run.push(x)});flush();
+  }
+  const payFuture={};
+  for(let i=0;i<=H;i++){const k=mkAdd(cur,i);payFuture[k]=paydays(k,wd).filter(d=>d>today).length}
+  /* ingresos por mes */
+  const incAll={},incRecM={},incOtroM={},incExtraM={};
+  S.ingresos.forEach(i=>{const k=i.fecha.slice(0,7),v=net(i);incAll[k]=(incAll[k]||0)+v;
+    if(i.tipo==='extra')incExtraM[k]=(incExtraM[k]||0)+v;else incRecM[k]=(incRecM[k]||0)+v;
+    if(i.tipo==='otro')incOtroM[k]=(incOtroM[k]||0)+v});
+  Object.keys(estIng).forEach(k=>{incAll[k]=(incAll[k]||0)+estIng[k];incRecM[k]=(incRecM[k]||0)+estIng[k]});
+  /* gastos por mes */
+  const varM={},deuM={},recM={},nrM={},catM={},hormM={};
+  S.gastos.forEach(g=>{const k=g.fecha.slice(0,7);
+    if(g.nr){nrM[k]=(nrM[k]||0)+g.monto;return}
+    if(g.rec)recM[k]=(recM[k]||0)+g.monto;
+    else if(g.cat==='deudas')deuM[k]=(deuM[k]||0)+g.monto;
+    else{varM[k]=(varM[k]||0)+g.monto;if(g.monto<st.umbralHormiga)hormM[k]=(hormM[k]||0)+g.monto}
+    const c=catM[k]=catM[k]||{};c[g.cat]=(c[g.cat]||0)+g.monto});
+  function recSched(k){let t=0,after=0;const byCat={};S.recurrentes.forEach(r=>occRec(r,k).forEach(dt=>{t+=r.monto;byCat[r.cat]=(byCat[r.cat]||0)+r.monto;if(iso(dt)>today)after+=r.monto}));return{t,after,byCat}}
+  const recMonthly=sum(S.recurrentes.map(r=>r.monto*(FREQ[r.frecuencia]||1)));
+  /* inicio de datos de gasto (modo manual sin cobertura) */
+  let startGas=null;const cands=[];
+  if(S.gastos.length){const f=S.gastos.map(g=>g.fecha).sort()[0];cands.push(parseInt(f.slice(8,10),10)>10?mkAdd(f.slice(0,7),1):f.slice(0,7))}
+  if(S.recurrentes.length)cands.push(S.recurrentes.map(r=>r.inicio.slice(0,7)).sort()[0]);
+  if(cands.length)startGas=cands.sort()[0];
+  const hasGas=k=>{const c=covered(S,k);return c===null?(startGas!==null&&k>=startGas&&k<cur):c&&k<cur};
+  /* historial */
+  const hist=[],fitV=[],fitD=[],fitT=[],fitO=[];
+  const firstOtro=Object.keys(incOtroM).sort()[0];
+  for(let i=W;i>=1;i--){
+    const k=mkAdd(cur,-i),hi=(incAll[k]||0)>0,hg=hasGas(k);
+    const v=varM[k]||0,dd=deuM[k]||0,rc=(recM[k]||0)+recSched(k).t,nr=nrM[k]||0;
+    const row={mk:k,kind:'hist',inc:hi?incAll[k]:null,incRec:hi?(incRecM[k]||0):null,incEst:estIng[k]||0,exp:hg?v+dd+rc+nr:null,expBase:hg?v+dd+rc:null,varg:hg?v+dd:null,cons:hg?v:null,deu:hg?dd:null,rec:hg?rc:null,nr:hg?nr:null,hasGas:hg};
+    row.flow=(row.inc!=null&&row.exp!=null)?row.inc-row.exp:null;hist.push(row);
+    const x=mkDiff('2000-01',k);
+    if(hg){fitV.push({x,y:v});fitD.push(dd);fitT.push({x,y:v+dd+rc})}
+    if(firstOtro&&k>=firstOtro)fitO.push({x,y:incOtroM[k]||0});
+  }
+  const tx=[];for(let i=0;i<=H;i++)tx.push(mkDiff('2000-01',mkAdd(cur,i)));
+  const fitVar=fitSeries(fitV,tx),fitTot=fitSeries(fitT,tx),fitOtro=fitSeries(fitO,tx);
+  const deuAvg=st.deudasVar==='excluir'?0:avg(fitD),deuSd=fitD.length>1?Math.sqrt(avg(fitD.map(y=>(y-avg(fitD))**2))):.2*deuAvg;
+  const lastFit=fitV.length?fitV[fitV.length-1].x:null,gap=lastFit==null?99:mkDiff('2000-01',cur)-lastFit;
+  const conf=fitV.length>=5&&gap<=2?'alta':fitV.length>=3&&gap<=3?'media':'baja';
+  /* eventos */
+  const events={};
+  S.eventos.forEach(e=>{if(e.fecha<=today)return;const k=e.fecha.slice(0,7);const o=events[k]=events[k]||{ing:0,gas:0};if(e.tipo==='ingreso')o.ing+=e.monto;else o.gas+=e.monto});
+  const recMonth={};for(let i=0;i<=H;i++){const k=mkAdd(cur,i);recMonth[k]=recSched(k)}
+  const last3=hist.filter(r=>r.expBase!=null&&r.incRec!=null).slice(-3);
+  const var3=last3.length?avg(last3.map(r=>r.cons)):0;
+  /* categorías y hormiga sobre los últimos 3 meses con datos */
+  const catAvg={};let tot=0,horm=0;
+  last3.forEach(r=>{const c=catM[r.mk]||{};Object.keys(c).forEach(id=>{catAvg[id]=(catAvg[id]||0)+c[id]});
+    S.recurrentes.forEach(()=>{});horm+=hormM[r.mk]||0});
+  Object.keys(catAvg).forEach(id=>{catAvg[id]/=last3.length||1});
+  const nrAvg=last3.length?avg(last3.map(r=>r.nr||0)):0;
+  const varTotal3=sum(last3.map(r=>r.cons||0));
+  return{deuAvg,deuSd,today,cur,H,W,wd,base,incTrend,estIng,estDates,payFuture,hist,fitVar,fitTot,fitOtro,nFit:fitV.length,gap,conf,events,recMonth,recMonthly,var3,catAvg,hormAvg:last3.length?horm/last3.length:0,hormShare:varTotal3>0?horm/varTotal3:0,nrAvg,last3,
+    saldo:st.saldo==null?0:st.saldo,saldoSet:st.saldo!=null,
+    cur0:{incAll:incAll[cur]||0,mtdVar:(varM[cur]||0)+(deuM[cur]||0),mtdOtro:incOtroM[cur]||0,recHist:recM[cur]||0},incExtraM,startGas};
+}
+
+function runProj(M,esc,mods){
+  mods=mods||[];let saldo=M.saldo;const rows=[];
+  const freeze=mods.some(m=>m.type==='freeze');
+  const cutVar=sum(mods.filter(m=>m.type==='cutVar').map(m=>m.amount));
+  const cutRec=sum(mods.filter(m=>m.type==='cutRec').map(m=>m.amount));
+  for(let i=0;i<=M.H;i++){
+    const k=mkAdd(M.cur,i),ev=M.events[k]||{ing:0,gas:0},rs=M.recMonth[k];
+    let v0=M.fitVar.proj[i];const b=M.fitVar.band[i];
+    if(i>=1){if(freeze&&M.var3)v0=Math.min(v0,M.var3);v0-=Math.min(cutVar,.4*v0)}
+    let v=Math.max(0,v0+(esc==='cons'?b:esc==='opt'?-b:0));
+    const dp=Math.max(0,M.deuAvg+(esc==='cons'?M.deuSd:esc==='opt'?-M.deuSd:0)),cons=v;v+=dp;
+    let r=rs.t;if(i>=1)r-=Math.min(cutRec,.2*r);
+    const o=M.fitOtro.proj[i];
+    let inc,exp,cash;
+    if(i===0){
+      const otroRem=Math.max(0,o-M.cur0.mtdOtro),rem=M.payFuture[k]*M.base;
+      inc=M.cur0.incAll+rem+otroRem+ev.ing;
+      exp=Math.max(M.cur0.mtdVar,v)+r+M.cur0.recHist+ev.gas;
+      cash=rem+otroRem+ev.ing-(Math.max(0,v-M.cur0.mtdVar)+rs.after+ev.gas);
+    }else{
+      inc=M.payFuture[k]*M.base+o+ev.ing;exp=v+r+ev.gas;cash=inc-exp;
+    }
+    saldo+=cash;
+    rows.push({mk:k,i,kind:i===0?'cur':'proj',inc,exp,varg:i===0?Math.max(M.cur0.mtdVar,v):v,cons,deu:dp,rec:r+(i===0?M.cur0.recHist:0),flow:inc-exp,cash,saldo});
+  }
+  return rows;
+}
+
+/* ---------- indicadores ---------- */
+function status(level,label){return{level,label,icon:level==='good'?'✓':level==='warn'?'!':level==='serious'?'▲':level==='crit'?'✕':'–'}}
+function indicators(M,base){
+  const L=M.last3,n=L.length;
+  const avgInc=n?avg(L.map(r=>r.incRec)):null,avgExp=n?avg(L.map(r=>r.expBase)):null;
+  const tasa=(avgInc>0&&avgExp!=null)?(avgInc-avgExp)/avgInc:null;
+  const ind={n,avgInc,avgExp,tasa};
+  ind.tasaS=tasa==null?status('na','Sin datos'):tasa>=.2?status('good','Sólida'):tasa>=.1?status('warn','Mejorable'):tasa>=0?status('serious','Baja'):status('crit','Déficit');
+  const sp=M.fitTot.n>=2?M.fitTot.slopePct:null;ind.expTrend=sp;
+  ind.expTrendS=sp==null?status('na','Datos insuficientes'):sp<=.005?status('good',sp<-.005?'A la baja':'Estable'):sp<=.03?status('warn','Al alza leve'):sp<=.06?status('serious','Al alza'):status('crit','Al alza fuerte');
+  ind.incTrend=M.incTrend;
+  ind.incTrendS=M.incTrend==null?status('na','Datos insuficientes'):M.incTrend>=-.02?status('good',M.incTrend>.02?'Al alza':'Estable'):M.incTrend>=-.06?status('warn','A la baja leve'):status('serious','A la baja');
+  ind.colchon=(M.saldoSet&&avgExp>0)?M.saldo/avgExp:null;
+  ind.colchonS=ind.colchon==null?status('na',M.saldoSet?'Sin gastos':'Captura tu saldo'):ind.colchon>=3?status('good','Cubierto'):ind.colchon>=1?status('warn','Parcial'):status('serious','Insuficiente');
+  ind.cargaFija=avgInc>0?M.recMonthly/avgInc:null;
+  ind.cargaFijaS=ind.cargaFija==null?status('na','Sin datos'):ind.cargaFija<=.35?status('good','Manejable'):ind.cargaFija<=.5?status('warn','Alta'):status('serious','Muy alta');
+  ind.horm=M.hormShare;
+  ind.hormS=n?(M.hormShare<=.05?status('good','Bajo'):M.hormShare<=.10?status('warn','Moderado'):status('serious','Alto')):status('na','Sin datos');
+  const deb=M.catAvg.deudas||0;ind.debtShare=(avgExp>0)?deb/avgExp:null;
+  ind.debtS=ind.debtShare==null?status('na','Sin datos'):ind.debtShare<=.2?status('good','Bajo'):ind.debtShare<=.35?status('warn','Considerable'):status('serious','Predominante');
+  const neg=base.find(r=>r.saldo<0);ind.deficit=M.saldoSet?(neg?neg.mk:null):null;
+  const lvl=[ind.tasaS,ind.expTrendS,ind.colchonS,ind.cargaFijaS,ind.debtS].map(s=>s.level);
+  ind.global=(ind.deficit||lvl.includes('crit'))?status('crit','Crítico'):(lvl.filter(l=>l==='serious').length>=2||(tasa!=null&&tasa<0))?status('serious','Atención urgente'):lvl.includes('serious')||lvl.includes('warn')?status('warn','Atención'):n?status('good','Saludable'):status('na','Sin datos');
+  return ind;
+}
+
+/* ---------- alternativas ---------- */
+const money=n=>(n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-MX');
+function buildAlts(S,M,ind,base){
+  const st=S.settings,A=[],proj=base.slice(1);
+  const flowAvg=avg(proj.map(r=>r.flow)),incAvg=avg(proj.map(r=>r.inc)),varAvg=avg(proj.map(r=>r.cons));
+  if(ind.expTrend!=null&&ind.expTrend>.015&&M.var3){
+    const imp=avg(proj.map(r=>Math.max(0,r.cons-M.var3)));
+    if(imp>1)A.push({id:'freeze',titulo:'Congelar el gasto variable en su promedio reciente',detalle:'La tendencia empuja tu gasto variable hacia arriba. Fijar un tope mensual igual al promedio de los meses con datos ('+money(M.var3)+') evita que siga creciendo.',ahorro:imp,dif:1,mod:{type:'freeze'}});
+  }
+  Object.keys(M.catAvg).filter(id=>!catEss(id)&&M.catAvg[id]>0).sort((a,b)=>M.catAvg[b]-M.catAvg[a]).slice(0,2).forEach(id=>{
+    const amt=.15*M.catAvg[id];
+    if(amt>=30)A.push({id:'cut-'+id,titulo:'Reducir 15% en '+catName(id).toLowerCase(),detalle:'Es una de tus categorías discrecionales más pesadas: promedio de '+money(M.catAvg[id])+' al mes. Un recorte moderado no toca lo esencial.',ahorro:amt,dif:2,mod:{type:'cutVar',amount:amt}});
+  });
+  if(M.hormShare>=.05&&M.hormAvg>0){
+    const amt=.5*M.hormAvg;
+    A.push({id:'horm',titulo:'Controlar los gastos hormiga',detalle:'Los cargos menores a '+money(st.umbralHormiga)+' suman '+money(M.hormAvg)+' al mes ('+Math.round(100*M.hormShare)+'% de tu gasto variable). Reducirlos a la mitad casi no se nota en el día a día.',ahorro:amt,dif:1,mod:{type:'cutVar',amount:amt}});
+  }
+  const subM=sum(S.recurrentes.filter(r=>r.cat==='suscripciones').map(r=>r.monto*(FREQ[r.frecuencia]||1)));
+  if(subM>=150)A.push({id:'subs',titulo:'Depurar suscripciones',detalle:'Tus suscripciones suman '+money(subM)+' al mes. Cancelar o compartir las que menos usas libera flujo sin tocar lo esencial.',ahorro:.3*subM,dif:1,mod:{type:'cutRec',amount:.3*subM}});
+  if(incAvg>0&&varAvg>0){
+    const target=st.metaAhorro/100*incAvg,gap=target-flowAvg,cap=.4*varAvg;
+    if(gap>0){const amt=Math.min(gap,cap);
+      A.push({id:'meta',titulo:'Llegar a una tasa de ahorro de '+st.metaAhorro+'%',detalle:gap<=cap?'Para ahorrar '+money(target)+' al mes necesitas recortar '+money(gap)+' ('+Math.round(100*gap/varAvg)+'% de lo que proyectas gastar en variables).':'La meta pide '+money(gap)+' al mes, más de lo que se puede recortar solo en gasto variable (máximo realista '+money(cap)+'). Habría que sumar ingreso adicional o renegociar pagos de deuda.',ahorro:amt,dif:gap<=cap*.5?2:3,mod:{type:'cutVar',amount:amt}});}
+  }
+  if(M.saldoSet&&ind.deficit&&varAvg>0){
+    const need=Math.max.apply(null,base.map((r,i)=>i===0?0:(-r.saldo)/i)),cap=.4*varAvg,amt=Math.min(need,cap);
+    if(need>0)A.push({id:'deficit',titulo:'Evitar quedarte sin saldo',detalle:'Con la tendencia actual el saldo se agota en '+mkLong(ind.deficit)+'. Evitarlo requiere liberar '+money(need)+' al mes'+(need>cap?', más de lo que alcanza a recortarse en variables ('+money(cap)+'): hay que combinar recortes con ingresos extra o con reestructurar pagos de deuda.':'.'),ahorro:amt,dif:3,mod:{type:'cutVar',amount:amt}});
+  }
+  /* informativas (sin efecto en la proyección) */
+  if(ind.debtShare!=null&&ind.debtShare>.2)A.push({id:'info-deuda',info:true,titulo:'Ordenar el pago de tarjetas y créditos',detalle:'Los pagos de tarjetas y créditos son el '+Math.round(100*ind.debtShare)+'% de tus egresos de cuenta. Con los estados de tarjeta se puede separar lo que consumes de lo que abonas a deuda y priorizar por tasa de interés (primero la más cara).'});
+  if(M.recMonthly>0&&ind.cargaFija!=null&&ind.cargaFija>.35)A.push({id:'info-fijos',info:true,titulo:'Revisar compromisos fijos',detalle:'Tus pagos recurrentes equivalen a '+money(M.recMonthly)+' al mes ('+Math.round(100*ind.cargaFija)+'% de tu ingreso). Pregunta si el crédito de nómina se puede reestructurar a un plazo mayor o con menor tasa; ahí está el mayor margen.'});
+  if(M.saldoSet&&ind.avgExp>0){
+    const meta=st.mesesFondo*ind.avgExp;
+    A.push({id:'info-fondo',info:true,titulo:'Fondo de emergencia de '+st.mesesFondo+' meses',detalle:'Meta: '+money(meta)+'. Hoy tienes '+money(M.saldo)+' ('+Math.max(0,Math.round(100*M.saldo/meta))+'% de la meta). Mientras el flujo sea negativo, la prioridad es frenar la caída antes de apartar ahorro.'});
+  }
+  const dec=M.events&&Object.keys(M.events).length;
+  if(!dec&&base.some(r=>r.mk.endsWith('-12')))A.push({id:'info-aguinaldo',info:true,titulo:'Planear el aguinaldo',detalle:'Diciembre suele traer un ingreso extra. Regístralo en "Captura → Eventos esperados" (hay un botón para sugerirlo) y decide de antemano a qué se destina: primero deuda cara o fondo de emergencia, no consumo.'});
+  return A;
+}
+function diagnosis(S,M,ind,base,cons,opt){
+  const L=[],end=base[base.length-1];
+  if(!M.last3.length){L.push('Aún no hay meses completos con gastos e ingresos para calcular tendencia. Captura gastos o importa estados de cuenta.');return L}
+  L.push('En los últimos '+M.last3.length+' meses con datos completos ('+M.last3.map(r=>mkLabel(r.mk)).join(', ')+') tu ingreso recurrente promedió '+money(ind.avgInc)+' y tus gastos '+money(ind.avgExp)+' al mes: flujo de '+money(ind.avgInc-ind.avgExp)+' ('+Math.round(100*ind.tasa)+'% del ingreso).');
+  if(ind.expTrend!=null)L.push('La tendencia del gasto es '+ind.expTrendS.label.toLowerCase()+' ('+(ind.expTrend>=0?'+':'')+(100*ind.expTrend).toFixed(1)+'% mensual).');
+  if(ind.cargaFija!=null&&ind.cargaFija>=1)L.push('Dato clave: tus pagos recurrentes ('+money(M.recMonthly)+' al mes, sobre todo el crédito de nómina) ya superan tu ingreso recurrente ('+money(ind.avgInc)+'). Aunque no gastaras nada más, el flujo sería negativo.');
+  if(M.deuAvg>0){const f0=avg(base.slice(1).map(r=>r.flow));L.push('Los abonos variables a tarjetas promedian '+money(M.deuAvg)+' al mes; sin ellos el flujo proyectado sería de '+money(f0+M.deuAvg)+'. En mayo-julio esos abonos se cubrieron con ingresos extraordinarios (crédito, caja de ahorro y retiros de Ahorro Fácil), que no se repiten.')}
+  if(M.nrAvg>0)L.push('Se excluyeron de la tendencia movimientos extraordinarios por '+money(M.nrAvg)+' al mes en promedio (traspasos grandes, impuestos anuales). Puedes reclasificarlos en Captura.');
+  const f=base.slice(1);L.push('Para '+mkLong(base[base.length-1].mk)+' proyectamos un flujo mensual de '+money(avg(f.map(r=>r.flow)))+' (rango de saldo final: '+money(cons[cons.length-1].saldo)+' a '+money(opt[opt.length-1].saldo)+').');
+  if(ind.deficit)L.push('Con este ritmo el saldo se agota en '+mkLong(ind.deficit)+'.');
+  else if(M.saldoSet)L.push('No se proyecta déficit de saldo dentro del horizonte elegido.');
+  L.push('Confianza de la proyección: '+M.conf+' ('+M.nFit+' meses de gasto completos'+(M.gap>1?'; el último mes con datos completos está '+M.gap+' meses atrás':'')+').');
+  return L;
+}
+function analyze(S,todayD){
+  const M=buildModel(S,todayD),base=runProj(M,'base'),cons=runProj(M,'cons'),opt=runProj(M,'opt');
+  const ind=indicators(M,base),alts=buildAlts(S,M,ind,base),fin=base[base.length-1].saldo;
+  alts.forEach(a=>{if(a.mod){const r=runProj(M,'base',[a.mod]);a.saldoFin=r[r.length-1].saldo;a.delta=a.saldoFin-fin}});
+  const sel=alts.filter(a=>a.mod&&S.alternativas.indexOf(a.id)>=0).map(a=>a.mod);
+  const withAlt=sel.length?runProj(M,'base',sel):null;
+  const mods=alts.filter(a=>a.mod);let rec=mods.find(a=>a.id==='deficit');
+  if(!rec&&mods.length)rec=mods.slice().sort((a,b)=>(b.ahorro/b.dif)-(a.ahorro/a.dif))[0];
+  if(rec)rec.recomendada=true;
+  return{M,base,cons,opt,withAlt,ind,alts,diag:diagnosis(S,M,ind,base,cons,opt)};
+}
+/*ENGINE_END*/
+
+/* =====================================================================
+   INTERFAZ
+   ===================================================================== */
+const LS=BUILD_MOVIL?'gestor_gastos_movil_v2':'gestor_gastos_v2';let store=true;
+function load(){try{const raw=localStorage.getItem(LS);if(raw){const o=JSON.parse(raw);if(o&&o.v===2)return migrate(o)}}catch(e){store=false}return seedState()}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){store=false}}
+let S=load();
+const hoyParam=(location.hash.match(/hoy=(\d{4}-\d{2}-\d{2})/)||[])[1];
+const TODAY=hoyParam?parse(hoyParam):new Date();
+let tab=(location.hash.match(/tab=(\w+)/)||[])[1]||(BUILD_MOVIL?'captura':'panel');if(/dark/.test(location.hash))S.settings.tema='dark';
+const $=s=>document.querySelector(s);
+function h(tag,props,...kids){
+  const e=document.createElement(tag);
+  for(const k in(props||{})){const v=props[k];if(v==null||v===false)continue;
+    if(k==='class')e.className=v;else if(k==='style')e.style.cssText=v;else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+    else if(k==='value'||k==='checked'||k==='disabled'||k==='selected')e[k]=v;else e.setAttribute(k,v===true?'':v)}
+  kids.flat(Infinity).forEach(c=>{if(c==null||c===false)return;e.append(c.nodeType?c:document.createTextNode(String(c)))});return e}
+const NS='http://www.w3.org/2000/svg';
+function sv(tag,attrs,...kids){const e=document.createElementNS(NS,tag);for(const k in(attrs||{}))if(attrs[k]!=null)e.setAttribute(k,attrs[k]);kids.flat().forEach(c=>{if(c!=null)e.append(c.nodeType?c:document.createTextNode(String(c)))});return e}
+const HIDE=()=>S.settings.ocultar;
+const fm=n=>(n==null||isNaN(n))?'—':HIDE()?'$ ••••':money(n);
+const fm2=n=>(n==null||isNaN(n))?'—':HIDE()?'$ ••••':(n<0?'-':'')+'$'+Math.abs(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pc=(x,d)=>x==null?'—':(100*x).toFixed(d||0)+'%';
+const kf=v=>HIDE()?'••':(Math.abs(v)>=10000?(v<0?'-':'')+'$'+(Math.abs(v)/1000).toFixed(Math.abs(v)%1000?1:0).replace(/\.0$/,'')+'K':money(v));
+const fdate=s=>{const p=s.split('-');return parseInt(p[2],10)+' '+MES[parseInt(p[1],10)-1]+' '+p[0].slice(2)};
+function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2600)}
+const uid=()=>'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function commit(msg){save();render();if(msg)toast(msg)}
+
+/* ---------- tooltip ---------- */
+const tipEl=()=>$('#tip');
+function showTip(x,y,title,rows){
+  const t=tipEl();t.replaceChildren(h('div',{class:'tt'},title),...rows.map(r=>h('div',{class:'row'},h('span',{class:'k'},h('span',{class:'ln',style:'border-color:'+r.color}),r.name),h('span',{class:'v'},r.val))));
+  t.style.display='block';const w=t.offsetWidth,hh=t.offsetHeight;let l=x+14,tp=y-hh-10;if(l+w>innerWidth-8)l=x-w-14;if(tp<8)tp=y+16;t.style.left=Math.max(8,l)+'px';t.style.top=tp+'px'}
+const hideTip=()=>{tipEl().style.display='none'};
+
+/* ---------- escalas ---------- */
+function niceScale(min,max,ticks){
+  ticks=ticks||5;if(max<=min)max=min+1;const span=max-min,step0=span/(ticks-1),mag=Math.pow(10,Math.floor(Math.log10(step0))),nr=step0/mag;
+  const step=(nr<=1?1:nr<=2?2:nr<=2.5?2.5:nr<=5?5:10)*mag,lo=Math.floor(min/step+1e-9)*step,hi=Math.ceil(max/step-1e-9)*step,t=[];
+  for(let v=lo;v<=hi+step/2;v+=step)t.push(+v.toFixed(6));return{lo,hi,ticks:t}}
+const cssv=n=>'var(--'+n+')';
+
+/* ---------- gráfica de líneas ---------- */
+function lineChart(host,cfg){
+  host.replaceChildren();
+  const W=Math.max(300,host.clientWidth||640),Hh=cfg.h||250,m={l:54,r:18,t:14,b:26};
+  const n=cfg.labels.length,pw=W-m.l-m.r-16,ph=Hh-m.t-m.b;
+  const vals=[];cfg.series.forEach(s=>{s.values.forEach(v=>v!=null&&vals.push(v));if(s.band){s.band.lo.concat(s.band.hi).forEach(v=>v!=null&&vals.push(v))}});
+  const sc=niceScale(vals.length?Math.min(0,Math.min.apply(null,vals)):0,vals.length?Math.max(0,Math.max.apply(null,vals)):1);
+  const X=i=>m.l+8+(n>1?i*pw/(n-1):pw/2),Y=v=>m.t+ph-(v-sc.lo)/(sc.hi-sc.lo)*ph;
+  const svg=sv('svg',{viewBox:'0 0 '+W+' '+Hh,role:'img','aria-label':cfg.aria||cfg.title||'Gráfico',tabindex:0});
+  sc.ticks.forEach(t=>{svg.append(sv('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),style:'stroke:'+(t===0&&sc.lo<0?'var(--axis)':'var(--grid)')+';stroke-width:1'}),sv('text',{x:m.l-8,y:Y(t)+4,'text-anchor':'end'},kf(t)))});
+  const step=n>9?2:1;cfg.labels.forEach((l,i)=>{if(i%step===0||i===n-1)svg.append(sv('text',{x:X(i),y:Hh-8,'text-anchor':'middle',class:i>cfg.split&&cfg.split!=null?'ink':''},l))});
+  if(cfg.split!=null&&cfg.split<n-1){const xs=(X(cfg.split)+X(cfg.split+1))/2;svg.append(sv('line',{x1:xs,x2:xs,y1:m.t,y2:m.t+ph,style:'stroke:var(--axis);stroke-width:1'}),sv('text',{x:xs+6,y:m.t+10,class:'ink'},'Proyección →'))}
+  const path=(vs,a,b)=>{let d='',pen=false;for(let i=a;i<=b;i++){const v=vs[i];if(v==null){pen=false;continue}d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);pen=true}return d};
+  cfg.series.forEach(s=>{
+    if(s.band){let up='',dn='';const idx=[];s.band.hi.forEach((v,i)=>{if(v!=null&&s.band.lo[i]!=null)idx.push(i)});
+      if(idx.length>1){idx.forEach(i=>{up+=(up?'L':'M')+X(i).toFixed(1)+' '+Y(s.band.hi[i]).toFixed(1)});idx.slice().reverse().forEach(i=>{dn+='L'+X(i).toFixed(1)+' '+Y(s.band.lo[i]).toFixed(1)});
+        svg.append(sv('path',{d:up+dn+'Z',style:'fill:'+s.color+';fill-opacity:.11;stroke:none'}))}}
+  });
+  cfg.series.forEach(s=>{
+    const sp=cfg.split==null?n-1:cfg.split;
+    const st='fill:none;stroke:'+s.color+';stroke-width:2;stroke-linejoin:round;stroke-linecap:round';
+    svg.append(sv('path',{d:path(s.values,0,sp),style:st}));
+    if(cfg.split!=null&&sp<n-1)svg.append(sv('path',{d:path(s.values,sp,n-1),style:st+';stroke-dasharray:5 5'}));
+    let last=-1;s.values.forEach((v,i)=>{if(v!=null)last=i});
+    if(last>=0)svg.append(sv('circle',{cx:X(last),cy:Y(s.values[last]),r:4.5,style:'fill:'+s.color+';stroke:var(--surface);stroke-width:2'}));
+  });
+  /* etiquetas finales selectivas */
+  const ends=cfg.series.map(s=>{let last=-1;s.values.forEach((v,i)=>{if(v!=null)last=i});return last>=0?{s,i:last,y:Y(s.values[last]),v:s.values[last]}:null}).filter(Boolean).sort((a,b)=>a.y-b.y);
+  let prevY=-99;ends.forEach(e=>{if(e.y-prevY>16){svg.append(sv('text',{x:Math.min(X(e.i),W-m.r-4),y:e.y-9,'text-anchor':'end',class:'ink',style:'font-weight:600'},fm(e.v)));prevY=e.y}});
+  /* hover */
+  const cross=sv('line',{y1:m.t,y2:m.t+ph,style:'stroke:var(--muted);stroke-width:1;display:none'}),dots=cfg.series.map(s=>sv('circle',{r:4.5,style:'fill:'+s.color+';stroke:var(--surface);stroke-width:2;display:none'}));
+  svg.append(cross,...dots);
+  const hit=sv('rect',{x:m.l,y:m.t,width:W-m.l-m.r,height:ph,style:'fill:transparent'});svg.append(hit);
+  let cur=-1;
+  function at(i,cx,cy){cur=i;const x=X(i);cross.setAttribute('x1',x);cross.setAttribute('x2',x);cross.style.display='';
+    const rows=[];cfg.series.forEach((s,k)=>{const v=s.values[i];if(v==null){dots[k].style.display='none';return}dots[k].setAttribute('cx',x);dots[k].setAttribute('cy',Y(v));dots[k].style.display='';rows.push({color:s.color,name:s.name,val:fm(v)})});
+    const proj=cfg.split!=null&&i>cfg.split;const r=svg.getBoundingClientRect();
+    showTip(cx!=null?cx:r.left+x*(r.width/W),cy!=null?cy:r.top+m.t+20,cfg.labelsLong[i]+(cfg.split!=null?(proj?' · proyección':' · real'):''),rows.length?rows:[{color:'var(--muted)',name:'Sin datos completos',val:'—'}])}
+  hit.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)*(W/r.width);at(Math.max(0,Math.min(n-1,Math.round((px-m.l-8)/(pw/Math.max(1,n-1))))),e.clientX,e.clientY)});
+  const off=()=>{cross.style.display='none';dots.forEach(d=>d.style.display='none');hideTip()};
+  hit.addEventListener('pointerleave',off);svg.addEventListener('blur',off);
+  svg.addEventListener('focus',()=>at(cur<0?n-1:cur));
+  svg.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();at(Math.max(0,(cur<0?n-1:cur)-1))}if(e.key==='ArrowRight'){e.preventDefault();at(Math.min(n-1,(cur<0?0:cur)+1))}if(e.key==='Escape')off()});
+  host.append(svg)}
+
+/* ---------- gráfica de columnas (simples o apiladas) ---------- */
+function barChart(host,cfg){
+  host.replaceChildren();
+  const W=Math.max(300,host.clientWidth||640),Hh=cfg.h||250,m={l:54,r:12,t:14,b:26};
+  const n=cfg.labels.length,pw=W-m.l-m.r,ph=Hh-m.t-m.b,band=pw/n,bw=Math.min(24,band*.6);
+  let mn=0,mx=0;
+  for(let i=0;i<n;i++){let pos=0,neg=0;cfg.series.forEach(s=>{const v=s.values[i];if(v==null)return;if(v>=0)pos+=v;else neg+=v});mx=Math.max(mx,pos);mn=Math.min(mn,neg)}
+  const sc=niceScale(mn,mx||1),Y=v=>m.t+ph-(v-sc.lo)/(sc.hi-sc.lo)*ph,X=i=>m.l+band*i+band/2;
+  const svg=sv('svg',{viewBox:'0 0 '+W+' '+Hh,role:'img','aria-label':cfg.aria||cfg.title,tabindex:0});
+  sc.ticks.forEach(t=>svg.append(sv('line',{x1:m.l,x2:W-m.r,y1:Y(t),y2:Y(t),style:'stroke:'+(t===0?'var(--axis)':'var(--grid)')+';stroke-width:1'}),sv('text',{x:m.l-8,y:Y(t)+4,'text-anchor':'end'},kf(t))));
+  const step=n>9?2:1;cfg.labels.forEach((l,i)=>{if(i%step===0||i===n-1)svg.append(sv('text',{x:X(i),y:Hh-8,'text-anchor':'middle',class:cfg.projFrom!=null&&i>=cfg.projFrom?'ink':''},l))});
+  if(cfg.projFrom!=null&&cfg.projFrom>0&&cfg.projFrom<n){const xs=m.l+band*cfg.projFrom;svg.append(sv('line',{x1:xs,x2:xs,y1:m.t,y2:m.t+ph,style:'stroke:var(--axis);stroke-width:1'}),sv('text',{x:xs+6,y:m.t+10,class:'ink'},'Proyección →'))}
+  const y0=Y(0);
+  function seg(x,ya,yb,color,round,up,op){
+    const top=Math.min(ya,yb),bot=Math.max(ya,yb),hgt=bot-top;if(hgt<.5)return null;const r=round?Math.min(4,hgt/2):0;let d;
+    if(!round)d='M'+x+' '+top+'H'+(x+bw)+'V'+bot+'H'+x+'Z';
+    else if(up)d='M'+x+' '+bot+'V'+(top+r)+'Q'+x+' '+top+' '+(x+r)+' '+top+'H'+(x+bw-r)+'Q'+(x+bw)+' '+top+' '+(x+bw)+' '+(top+r)+'V'+bot+'Z';
+    else d='M'+x+' '+top+'H'+(x+bw)+'V'+(bot-r)+'Q'+(x+bw)+' '+bot+' '+(x+bw-r)+' '+bot+'H'+(x+r)+'Q'+x+' '+bot+' '+x+' '+(bot-r)+'Z';
+    return sv('path',{d,style:'fill:'+color+';fill-opacity:'+op})}
+  const marks=[];
+  for(let i=0;i<n;i++){
+    let pos=0,neg=0;const op=(cfg.projFrom!=null&&i>=cfg.projFrom)?.55:1;const x=X(i)-bw/2;
+    const present=cfg.series.map((s,k)=>({s,k,v:s.values[i]})).filter(o=>o.v!=null&&o.v!==0);
+    present.forEach((o,j)=>{const lastPos=!present.slice(j+1).some(q=>q.v>0),lastNeg=!present.slice(j+1).some(q=>q.v<0);
+      if(o.v>0){const a=Y(pos),b=Y(pos+o.v);const gap=j>0&&pos>0?1:0;const p=seg(x,a-gap,b,o.s.color,lastPos,true,op);if(p)svg.append(p);pos+=o.v}
+      else{const a=Y(neg),b=Y(neg+o.v);const p=seg(x,a,b,o.s.color,lastNeg,false,op);if(p)svg.append(p);neg+=o.v}});
+    const hit=sv('rect',{x:m.l+band*i,y:m.t,width:band,height:ph,style:'fill:transparent'});
+    const show=(cx,cy)=>{const rows=cfg.series.map(s=>({color:s.color,name:s.name,val:fm(s.values[i])})).filter((r,k)=>cfg.series[k].values[i]!=null);
+      if(cfg.stack&&rows.length>1)rows.push({color:'var(--muted)',name:'Total',val:fm(sum(cfg.series.map(s=>s.values[i]||0)))});
+      const rr=svg.getBoundingClientRect();showTip(cx!=null?cx:rr.left+X(i)*(rr.width/W),cy!=null?cy:rr.top+m.t+20,cfg.labelsLong[i]+(cfg.projFrom!=null?(i>=cfg.projFrom?' · proyección':' · real'):''),rows.length?rows:[{color:'var(--muted)',name:'Sin datos completos',val:'—'}])};
+    hit.addEventListener('pointermove',e=>show(e.clientX,e.clientY));hit.addEventListener('pointerleave',hideTip);marks.push(hit);hit._show=show}
+  marks.forEach(x=>svg.append(x));
+  let cur=-1;svg.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();cur=Math.max(0,(cur<0?n-1:cur)-1);marks[cur]._show()}if(e.key==='ArrowRight'){e.preventDefault();cur=Math.min(n-1,cur+1);marks[cur]._show()}if(e.key==='Escape')hideTip()});
+  svg.addEventListener('focus',()=>{cur=n-1;marks[cur]._show()});svg.addEventListener('blur',hideTip);
+  host.append(svg)}
+
+function legendEl(items){return h('div',{class:'legend'},items.map(i=>h('span',{},i.line?h('i',{class:'swl'+(i.dash?' d':''),style:'border-color:'+i.color}):h('i',{class:'sw',style:'background:'+i.color}),i.name)))}
+function chartCard(o){
+  let tbl=false;const host=h('div',{class:'chart'}),body=h('div'),btn=h('button',{class:'btn small',onclick:()=>{tbl=!tbl;paint()}},'Ver tabla');
+  function paint(){btn.textContent=tbl?'Ver gráfico':'Ver tabla';body.replaceChildren();if(tbl)body.append(h('div',{class:'tscroll'},o.table()));else{body.append(host);o.draw(host)}}
+  const card=h('section',{class:'card chartcard'},h('div',{class:'head'},h('div',{},h('h3',{},o.title),h('div',{class:'desc'},o.desc)),btn),o.legend?legendEl(o.legend):null,body);
+  card._paint=paint;(window._cards=window._cards||[]).push(card);return card}
+function tableOf(labels,cols,rows){
+  return h('table',{class:'t'},h('thead',{},h('tr',{},h('th',{},'Periodo'),cols.map(c=>h('th',{},c)))),h('tbody',{},labels.map((l,i)=>h('tr',{},h('td',{},l),rows[i].map(v=>h('td',{},v))))))}
+
+/* ---------- piezas ---------- */
+function seg(opts,val,on,label){return h('div',{class:'seg',role:'group','aria-label':label},opts.map(o=>h('button',{type:'button','aria-pressed':String(o[0]===val),onclick:()=>on(o[0])},o[1])))}
+function chip(s){return h('span',{class:'chip '+s.level},h('i',{},s.icon),s.label)}
+function tile(lbl,val,det,s){return h('div',{class:'card tile'},h('div',{class:'lbl'},lbl),h('div',{class:'val'},val),det?h('div',{class:'det'},det):null,s?chip(s):null)}
+function banner(kind,...c){return h('div',{class:'banner '+(kind||'')},c)}
+
+/* =====================================================================
+   VISTA: PANEL
+   ===================================================================== */
+function viewPanel(){
+  if(BUILD_MOVIL)return viewPanelMovil();
+  if(!S.gastos.length&&!S.ingresos.some(i=>i.tipo==='nomina'))return h('section',{class:'card'},h('h3',{},'Aún no hay datos para proyectar'),h('div',{class:'desc'},'Captura tus gastos e ingresos con "Captura rápida" (indicando la cuenta). En la computadora, fusiona estas capturas con el código de sincronización de "Ajustes" para ver la proyección, las tendencias y las alternativas.'),h('button',{class:'btn primary',onclick:()=>{tab='captura';render()}},'Ir a Captura rápida'));
+  const A=analyze(S,TODAY),M=A.M,ind=A.ind,st=S.settings;
+  const main=st.escenario==='cons'?A.cons:st.escenario==='opt'?A.opt:A.base;
+  const root=h('div',{class:'stack'});
+  root.append(h('div',{class:'filters'},
+    h('div',{class:'grp'},h('label',{class:'t'},'Horizonte'),seg([[3,'3 meses'],[4,'4'],[5,'5'],[6,'6 meses']],st.horizonte,v=>{st.horizonte=v;commit()},'Horizonte')),
+    h('div',{class:'grp'},h('label',{class:'t'},'Escenario'),seg([['cons','Conservador'],['base','Base'],['opt','Optimista']],st.escenario,v=>{st.escenario=v;commit()},'Escenario')),
+    h('div',{class:'grp'},h('label',{class:'t'},'Historial'),seg([[3,'3 meses'],[6,'6 meses'],[12,'12 meses']],st.ventana,v=>{st.ventana=v;commit()},'Historial'))));
+  /* avisos de calidad de datos */
+  const miss=M.hist.filter(r=>!r.hasGas).map(r=>mkLabel(r.mk));
+  if(S.settings.cobertura&&S.settings.cobertura.desde&&miss.length)root.append(banner('',h('b',{},'Faltan estados de cuenta. '),'No hay gastos completos para: '+miss.join(', ')+'. Esos meses no se usan para calcular tendencias (cobertura registrada: '+fdate(S.settings.cobertura.desde)+' a '+fdate(S.settings.cobertura.hasta)+', salvo huecos). Sube los estados que faltan y actualiza la cobertura en "Datos y ajustes".'));
+  if(M.estDates.length)root.append(banner('info',h('b',{},'Nómina estimada. '),'No hay recibo de '+M.estDates.length+' semana(s) ('+fdate(M.estDates[0])+' a '+fdate(M.estDates[M.estDates.length-1])+'); se estimaron con tu promedio reciente ('+fm(M.base)+' por semana). Captura los recibos para afinar.'));
+  if(!M.saldoSet)root.append(banner('info',h('b',{},'Captura tu saldo actual. '),'Sin él no puedo calcular el colchón ni cuándo se agotaría el dinero; la proyección muestra flujo acumulado desde hoy. ',h('button',{class:'btn small',onclick:()=>{tab='datos';render()}},'Ir a ajustes')));
+  const end=main[main.length-1];
+  root.append(h('div',{class:'card hero'},h('div',{},h('div',{class:'lbl'},(M.saldoSet?'Saldo proyectado':'Flujo acumulado proyectado')+' al cierre de '+mkLong(end.mk)+' · escenario '+(st.escenario==='cons'?'conservador':st.escenario==='opt'?'optimista':'base')),h('div',{class:'big',style:end.saldo<0?'color:var(--crit)':''},fm(end.saldo))),
+    h('div',{class:'note'},h('div',{},'Rango: '+fm(A.cons[A.cons.length-1].saldo)+' a '+fm(A.opt[A.opt.length-1].saldo)),h('div',{},'Flujo mensual proyectado: '+fm(avg(main.slice(1).map(r=>r.flow)))),h('div',{},'Confianza: '+M.conf+' · '+M.nFit+' meses de gasto completos'))));
+  root.append(h('div',{class:'grid g4'},
+    tile('Tasa de ahorro (prom. '+ind.n+' m)',ind.tasa==null?'—':pc(ind.tasa),'Flujo '+fm(ind.avgInc!=null?ind.avgInc-ind.avgExp:null)+' / mes',ind.tasaS),
+    tile('Gasto mensual promedio',fm(ind.avgExp),'Ingreso recurrente '+fm(ind.avgInc),null),
+    tile('Tendencia de gastos',ind.expTrend==null?'—':(ind.expTrend>=0?'+':'')+(100*ind.expTrend).toFixed(1)+'% /mes','Sobre el gasto total de meses completos',ind.expTrendS),
+    tile('Tendencia de ingresos',ind.incTrend==null?'—':(ind.incTrend>=0?'+':'')+(100*ind.incTrend).toFixed(1)+'%','Últimas 4 semanas vs. 8 previas',ind.incTrendS),
+    tile('Colchón de efectivo',ind.colchon==null?'—':ind.colchon.toFixed(1)+' meses',M.saldoSet?'Saldo '+fm(M.saldo):'Falta capturar saldo',ind.colchonS),
+    tile('Compromisos fijos vs. ingreso',ind.cargaFija==null?'—':pc(ind.cargaFija),fm(M.recMonthly)+' al mes en pagos recurrentes',ind.cargaFijaS),
+    tile('Pagos de tarjetas y créditos',ind.debtShare==null?'—':pc(ind.debtShare),'De tus egresos de cuenta',ind.debtS),
+    tile('Gastos hormiga',pc(ind.horm),'Cargos menores a '+fm(st.umbralHormiga),ind.hormS)));
+  /* datos de gráficas */
+  const W=M.hist.length,all=M.hist.concat(main.map(r=>r));
+  const labels=all.map((r,i)=>mkLabel(r.mk,i===0||r.mk.endsWith('-01'))),longs=all.map(r=>mkLong(r.mk)+(r.kind==='cur'?' (en curso)':''));
+  const nul=a=>a.map(()=>null);
+  const inc=M.hist.map(r=>r.incRec).concat(main.map(r=>r.inc)),exp=M.hist.map(r=>r.expBase).concat(main.map(r=>r.exp));
+  const bandLo=nul(M.hist).concat(A.opt.map(r=>r.exp)),bandHi=nul(M.hist).concat(A.cons.map(r=>r.exp));
+  root.append(h('div',{class:'grid g2'},
+    chartCard({title:'Ingresos y gastos',desc:'Historial real (ingreso recurrente y gasto base, sin movimientos extraordinarios) y proyección; la franja va del escenario optimista al conservador.',legend:[{name:'Ingresos',color:cssv('c-ing'),line:1},{name:'Gastos',color:cssv('c-gas'),line:1},{name:'Proyección',color:cssv('muted'),line:1,dash:1}],
+      draw:host=>lineChart(host,{labels,labelsLong:longs,split:W-1,h:260,aria:'Ingresos y gastos mensuales con proyección',series:[{name:'Ingresos',color:cssv('c-ing'),values:inc},{name:'Gastos',color:cssv('c-gas'),values:exp,band:{lo:bandLo,hi:bandHi}}]}),
+      table:()=>tableOf(longs,['Ingresos','Gastos','Flujo','Extraordinario (ingreso)','Extraordinario (gasto)'],all.map((r,i)=>[fm(inc[i]),fm(exp[i]),fm(inc[i]!=null&&exp[i]!=null?inc[i]-exp[i]:null),fm(r.kind==='hist'&&r.inc!=null?r.inc-r.incRec:null),fm(r.kind==='hist'?r.nr:null)]))}),
+    chartCard({title:M.saldoSet?'Saldo proyectado':'Flujo acumulado proyectado',desc:'Al cierre de cada mes. La franja va del escenario conservador al optimista.'+(A.withAlt?' La línea rosa aplica las alternativas que marcaste.':''),
+      legend:[{name:M.saldoSet?'Saldo':'Flujo acumulado',color:cssv('c-sal'),line:1}].concat(A.withAlt?[{name:'Con alternativas',color:cssv('c-alt'),line:1}]:[]),
+      draw:host=>lineChart(host,{labels:main.map((r,i)=>mkLabel(r.mk,i===0||r.mk.endsWith('-01'))),labelsLong:main.map(r=>mkLong(r.mk)),split:null,h:260,aria:'Saldo proyectado por mes',
+        series:[{name:M.saldoSet?'Saldo':'Flujo acumulado',color:cssv('c-sal'),values:main.map(r=>r.saldo),band:{lo:A.cons.map(r=>r.saldo),hi:A.opt.map(r=>r.saldo)}}].concat(A.withAlt?[{name:'Con alternativas',color:cssv('c-alt'),values:A.withAlt.map(r=>r.saldo)}]:[])}),
+      table:()=>tableOf(main.map(r=>mkLong(r.mk)),['Conservador','Seleccionado','Optimista'].concat(A.withAlt?['Con alternativas']:[]),main.map((r,i)=>[fm(A.cons[i].saldo),fm(r.saldo),fm(A.opt[i].saldo)].concat(A.withAlt?[fm(A.withAlt[i].saldo)]:[])))})));
+  const flow=M.hist.map(r=>(r.incRec!=null&&r.expBase!=null)?r.incRec-r.expBase:null).concat(main.map(r=>r.flow));
+  const recS=M.hist.map(r=>r.rec).concat(main.map(r=>r.rec)),conS=M.hist.map(r=>r.cons).concat(main.map(r=>r.cons)),deuS=M.hist.map(r=>r.deu).concat(main.map(r=>r.deu));
+  root.append(h('div',{class:'grid g2'},
+    chartCard({title:'Flujo neto mensual',desc:'Ingreso recurrente menos gasto base de cada mes. Las barras tenues son proyección.',
+      draw:host=>barChart(host,{labels,labelsLong:longs,projFrom:W,h:250,aria:'Flujo neto mensual',series:[{name:'Flujo neto',color:cssv('c-sal'),values:flow}]}),
+      table:()=>tableOf(longs,['Flujo neto'],all.map((r,i)=>[fm(flow[i])]))}),
+    chartCard({title:'De qué se compone el gasto',desc:'Pagos recurrentes, consumo variable y abonos variables a tarjetas y créditos.',legend:[{name:'Recurrentes',color:cssv('c-rec')},{name:'Consumo variable',color:cssv('c-gas')},{name:'Abonos a tarjetas',color:cssv('c-sal')}],
+      draw:host=>barChart(host,{labels,labelsLong:longs,projFrom:W,h:250,stack:true,aria:'Composición del gasto mensual',series:[{name:'Recurrentes',color:cssv('c-rec'),values:recS},{name:'Consumo variable',color:cssv('c-gas'),values:conS},{name:'Abonos a tarjetas',color:cssv('c-sal'),values:deuS}]}),
+      table:()=>tableOf(longs,['Recurrentes','Consumo','Abonos a tarjetas'],all.map((r,i)=>[fm(recS[i]),fm(conS[i]),fm(deuS[i])]))})));
+  /* categorías */
+  const cats=Object.keys(M.catAvg).map(id=>({id,v:M.catAvg[id]})).filter(c=>c.v>0).sort((a,b)=>b.v-a.v);
+  const totC=sum(cats.map(c=>c.v));
+  root.append(h('section',{class:'card'},h('h3',{},'Gasto por categoría'),h('div',{class:'desc'},'Promedio mensual de los últimos '+ind.n+' meses con datos completos (sin movimientos extraordinarios).'),
+    cats.length?cats.map(c=>h('div',{class:'hbar'},h('div',{class:'nm',title:catName(c.id)},catName(c.id)),h('div',{class:'trk'},h('div',{class:'fill',style:'width:'+Math.max(2,100*c.v/cats[0].v)+'%'})),h('div',{class:'vl'},h('b',{},fm(c.v)),' · '+pc(c.v/totC)))):h('div',{class:'muted'},'Sin datos todavía.')));
+  /* sugerencias */
+  root.append(h('section',{class:'card'},h('div',{style:'display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center'},h('h3',{},'Diagnóstico del analista'),chip(ind.global)),h('div',{class:'stack',style:'margin-top:10px'},A.diag.map(t=>h('p',{style:'margin:0'},t)))));
+  const mods=A.alts.filter(a=>a.mod),infos=A.alts.filter(a=>a.info);
+  root.append(h('section',{class:'card'},h('h3',{},'Alternativas para mejorar la tendencia'),h('div',{class:'desc'},'Marca las que quieras aplicar: se dibujan como una línea adicional en el gráfico de saldo y se acumulan (con tope de 40% sobre el consumo variable).'),
+    mods.length?mods.map(a=>h('div',{class:'alt'},h('input',{type:'checkbox','aria-label':a.titulo,checked:S.alternativas.indexOf(a.id)>=0,onchange:e=>{S.alternativas=S.alternativas.filter(x=>x!==a.id);if(e.target.checked)S.alternativas.push(a.id);commit()}}),
+      h('div',{},h('h4',{},a.titulo),h('p',{},a.detalle),h('div',{class:'meta'},a.recomendada?h('span',{class:'pill rec'},'Recomendada'):null,h('span',{class:'pill'},'Esfuerzo: '+['','bajo','medio','alto'][a.dif]))),
+      h('div',{class:'imp'},h('b',{},fm(a.ahorro)),h('span',{},'al mes'),h('span',{},'saldo final '+fm(a.saldoFin))))):h('div',{class:'muted'},'Con los datos actuales no hay recortes cuantificables. Captura más gastos para generar alternativas.'),
+    infos.length?h('div',{style:'margin-top:8px'},h('h4',{style:'margin:8px 0 2px'},'Para revisar'),infos.map(a=>h('div',{class:'alt'},h('span',{class:'dot',style:'background:var(--c-ing);margin-top:6px'}),h('div',{},h('h4',{},a.titulo),h('p',{},a.detalle)),h('span',{}))) ):null));
+  if(mods.length)root.append(h('section',{class:'card'},h('h3',{},'Comparador de alternativas'),h('div',{class:'desc'},'Saldo al cierre de '+mkLong(end.mk)+' aplicando cada alternativa por separado (escenario base).'),
+    h('div',{class:'tscroll'},h('table',{class:'t'},h('thead',{},h('tr',{},h('th',{},'Alternativa'),h('th',{},'Ahorro / mes'),h('th',{},'Saldo final'),h('th',{},'Mejora vs. base'))),
+      h('tbody',{},h('tr',{},h('td',{},'Sin cambios (base)'),h('td',{},'—'),h('td',{},fm(A.base[A.base.length-1].saldo)),h('td',{},'—')),mods.map(a=>h('tr',{},h('td',{},a.titulo+(a.recomendada?' ★':'')),h('td',{},fm(a.ahorro)),h('td',{},fm(a.saldoFin)),h('td',{},'+'+fm(a.delta)))))))));
+  const cons3=main.slice(1);const wk=avg(cons3.map(r=>r.cons))/(52/12);
+  root.append(h('section',{class:'card'},h('h3',{},'Plan de seguimiento'),h('ul',{style:'margin:8px 0 0;padding-left:18px'},
+    h('li',{},'Cada domingo (día de pago) registra los gastos de la semana en "Captura"; en 5 minutos mantienes la proyección al día.'),
+    wk>0?h('li',{},'Tope semanal sugerido de consumo variable: '+fm(wk)+' (proyección de consumo ÷ semanas del mes).'):null,
+    h('li',{},'Compara cada mes el semáforo de arriba: si la tasa de ahorro sube y la tendencia de gastos baja, vas bien.'),
+    h('li',{},'Sube los estados de cuenta de cada mes (y los de tarjetas) para que la tendencia use datos completos.'),
+    h('li',{},'Revisa los compromisos fijos al menos dos veces al año: son lo que más pesa y lo que menos se ajusta solo.'))));
+  return root}
+
+/* =====================================================================
+   CUENTAS, CAPTURA RÁPIDA Y MOVIMIENTOS
+   ===================================================================== */
+const cuentas=()=>S.settings.cuentas;
+const cuentaIdx=n=>cuentas().findIndex(c=>c.n===n);
+const CCOLS=['c-ing','c-rec','c-sal','c-amar','c-alt','c-gas'];
+const cuentaCol=n=>'var(--'+(cuentaIdx(n)<0?'muted':CCOLS[cuentaIdx(n)%CCOLS.length])+')';
+const cuentaTipo=n=>{const c=cuentas().find(c=>c.n===n);return c?c.t:null};
+const esCred=n=>cuentaTipo(n)==='credito';
+const dotc=n=>h('i',{class:'dotc',style:'background:'+cuentaCol(n)});
+function cuentaSelect(val){return h('select',{'aria-label':'Cuenta'},h('option',{value:''},'Sin cuenta'),cuentas().map(c=>h('option',{value:c.n,selected:c.n===val},c.n)))}
+function cuentaChips(val,onpick){
+  const box=h('div',{class:'chips',role:'radiogroup','aria-label':'Cuenta'});let cur=val;
+  const paint=()=>box.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.getAttribute('data-n')===cur)));
+  cuentas().forEach(c=>box.append(h('button',{type:'button',class:'chip-b','data-n':c.n,onclick:()=>{cur=c.n;paint();onpick(cur)}},dotc(c.n),c.n)));
+  paint();return box}
+const mesDe=d=>d.slice(0,7);
+const curMes=()=>mesDe(iso(TODAY));
+let qcMode='gasto',refocus=false,movF={cuenta:'',mes:null,q:'',n:40,open:null};
+function conceptosFrecuentes(modo){
+  const cnt={};(modo==='gasto'?S.gastos.map(g=>g.concepto):S.ingresos.filter(i=>i.tipo!=='nomina'&&!i.banco).map(i=>i.concepto)).forEach(c=>{if(c)cnt[c]=(cnt[c]||0)+1});
+  return Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,80)}
+function quickCapture(){
+  const today=iso(TODAY),gasto=qcMode==='gasto';
+  let cu=S.settings.ultimaCuenta&&cuentaIdx(S.settings.ultimaCuenta)>=0?S.settings.ultimaCuenta:(cuentas()[0]||{n:''}).n;
+  const monto=h('input',{type:'number',inputmode:'decimal',step:'0.01',min:'0.01',placeholder:'0.00',class:'amt',required:true,'aria-label':'Monto',autocomplete:'off'});
+  const con=h('input',{type:'text',list:'dl-con',placeholder:gasto?'Ej. Despensa, gasolina…':'Ej. Trabajo extra',maxlength:60,autocomplete:'off'});
+  const cat=catSelect(S.settings.ultimaCat||'alimentos'),fecha=h('input',{type:'date',value:today,required:true});
+  const nr=h('input',{type:'checkbox',id:'qc-nr'}),tipo=h('select',{},h('option',{value:'otro'},'Recurrente / variable'),h('option',{value:'extra'},'Extraordinario (no se proyecta)'));
+  const chips=cuentaChips(cu,v=>{cu=v});
+  con.addEventListener('change',()=>{const k=con.value.trim().toLowerCase();if(!k||!gasto)return;const g=S.gastos.slice().reverse().find(x=>(x.concepto||'').toLowerCase()===k);if(g)cat.value=g.cat});
+  const form=h('form',{class:'qf',onsubmit:e=>{e.preventDefault();const m=parseFloat(monto.value);if(!(m>0)||!fecha.value)return toast('Escribe un monto');
+    S.settings.ultimaCuenta=cu;
+    if(gasto){S.settings.ultimaCat=cat.value;S.gastos.push({id:uid(),fecha:fecha.value,cat:cat.value,concepto:con.value.trim()||catName(cat.value),monto:m,rec:false,nr:nr.checked,cuenta:cu,src:'manual'})}
+    else S.ingresos.push({id:uid(),fecha:fecha.value,tipo:tipo.value,concepto:con.value.trim()||'Ingreso',neto:m,cuenta:cu});
+    refocus=true;commit((gasto?'Gasto':'Ingreso')+' guardado en '+(cu||'sin cuenta'))}},
+    h('div',{class:'amtw'},h('span',{},'$'),monto),
+    field(gasto?'Se cargó a':'Se depositó en',chips),
+    field('Concepto',con),
+    h('div',{class:'row2'},gasto?field('Categoría',cat):field('Tipo',tipo),field('Fecha',fecha)),
+    gasto?h('div',{class:'fld chk'},nr,h('label',{for:'qc-nr'},'No recurrente (no entra a la tendencia)')):null,
+    h('button',{class:'btn primary big',type:'submit'},gasto?'Guardar gasto':'Guardar ingreso'),
+    h('datalist',{id:'dl-con'},conceptosFrecuentes(qcMode).map(c=>h('option',{value:c}))));
+  const sec=h('section',{class:'card qc'},h('h3',{style:'margin-bottom:8px'},'Captura rápida'),
+    h('div',{class:'seg qcseg'},['gasto','ingreso'].map(m=>h('button',{type:'button','aria-pressed':String(qcMode===m),onclick:()=>{qcMode=m;render()}},m==='gasto'?'Gasto':'Ingreso'))),form);
+  if(refocus){refocus=false;setTimeout(()=>monto.focus(),60)}
+  return sec}
+/* ¿hay riesgo de contar dos veces el consumo con tarjeta? */
+function dobleConteo(){
+  if(S.settings.deudasVar==='excluir')return false;
+  const lim=iso(new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()-90));
+  return S.gastos.some(g=>g.cuenta&&esCred(g.cuenta)&&g.cat!=='deudas'&&g.fecha>=lim)}
+function bannerDoble(){
+  if(!dobleConteo())return null;
+  return banner('',h('b',{},'Posible doble conteo. '),'Estás capturando compras hechas con tarjeta y, además, la proyección incluye los pagos de tarjeta que salen de tu cuenta: lo mismo se contaría dos veces. Cuando tengas capturado el consumo con tarjeta de los meses que usa la tendencia, excluye los abonos. ',
+    h('button',{class:'btn small',onclick:()=>{S.settings.deudasVar='excluir';commit('Abonos a tarjetas excluidos de la proyección')}},'Excluir abonos'))}
+function movsAll(){
+  const a=S.gastos.map(g=>({k:'g',o:g,fecha:g.fecha,con:g.concepto,cuenta:g.cuenta||'',monto:-g.monto}));
+  const b=S.ingresos.filter(i=>i.tipo!=='nomina').map(i=>({k:'i',o:i,fecha:i.fecha,con:i.concepto,cuenta:i.cuenta||'',monto:i.neto}));
+  return a.concat(b).sort((x,y)=>x.fecha<y.fecha?1:x.fecha>y.fecha?-1:0)}
+function mesActivo(all){
+  if(movF.mes!==null)return movF.mes;
+  const ms=new Set(all.map(m=>mesDe(m.fecha)));return ms.has(curMes())?curMes():([...ms].sort().reverse()[0]||curMes())}
+function movRow(m){
+  const g=m.o,open=movF.open===g,gas=m.k==='g';
+  const meta=h('div',{class:'s'},fdate(m.fecha),' · ',m.cuenta?h('span',{style:'display:inline-flex;align-items:center;gap:5px'},dotc(m.cuenta),m.cuenta):'Sin cuenta',' · ',gas?catName(g.cat):(g.tipo==='extra'?'Ingreso extraordinario':'Ingreso'),g.nr?' · No recurrente':null,g.rec?' · Recurrente':null);
+  const toggle=()=>{movF.open=open?null:g;render()};
+  const row=h('div',{class:'mv'},
+    h('div',{class:'row1',role:'button',tabindex:0,'aria-expanded':String(open),onclick:toggle,onkeydown:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}}},h('span',{class:'c'},m.con),h('span',{class:'a'+(m.monto>0?' in':'')},(m.monto>0?'+':'−')+fm2(Math.abs(m.monto)))),meta);
+  if(open){
+    const cs=cuentaSelect(m.cuenta);cs.onchange=()=>{g.cuenta=cs.value;commit()};
+    const ed=h('div',{class:'edit'},field('Cuenta',cs));
+    if(gas){const ct=catSelect(g.cat);ct.onchange=()=>{g.cat=ct.value;commit()};ed.append(field('Categoría',ct),
+      h('div',{class:'fld chk'},h('input',{type:'checkbox',id:'e-rec',checked:!!g.rec,onchange:e=>{g.rec=e.target.checked;if(g.rec)g.nr=false;commit()}}),h('label',{for:'e-rec'},'Recurrente')),
+      h('div',{class:'fld chk'},h('input',{type:'checkbox',id:'e-nr',checked:!!g.nr,onchange:e=>{g.nr=e.target.checked;if(g.nr)g.rec=false;commit()}}),h('label',{for:'e-nr'},'No recurrente')))}
+    ed.append(h('button',{class:'btn small danger',type:'button',onclick:()=>{if(!confirm('¿Borrar este movimiento?'))return;if(gas)S.gastos=S.gastos.filter(x=>x!==g);else S.ingresos=S.ingresos.filter(x=>x!==g);movF.open=null;commit('Movimiento borrado')}},'Borrar'));
+    row.append(ed)}
+  return row}
+function movPanel(titulo){
+  const all=movsAll(),mes=mesActivo(all),meses=[...new Set(all.map(m=>mesDe(m.fecha)).concat([curMes()]))].sort().reverse();
+  const hasNone=all.some(m=>!m.cuenta);
+  const opts=[['','Todas']].concat(cuentas().map(c=>[c.n,c.n]),hasNone?[['__none','Sin cuenta']]:[]);
+  const chips=h('div',{class:'chips',role:'group','aria-label':'Filtrar por cuenta'},opts.map(o=>h('button',{type:'button',class:'chip-b','aria-pressed':String(movF.cuenta===o[0]),onclick:()=>{movF.cuenta=o[0];movF.n=40;render()}},o[0]&&o[0]!=='__none'?dotc(o[0]):null,o[1])));
+  const q=h('input',{type:'search',placeholder:'Buscar concepto…',value:movF.q,'aria-label':'Buscar concepto',style:'flex:1;min-width:140px;background:var(--page);border:1px solid var(--border);border-radius:8px;padding:8px 10px'});
+  const listBox=h('div',{class:'mvs'});
+  const fil=()=>all.filter(m=>(!mes||mesDe(m.fecha)===mes)&&(!movF.cuenta||(movF.cuenta==='__none'?!m.cuenta:m.cuenta===movF.cuenta))&&(!movF.q||m.con.toLowerCase().indexOf(movF.q.toLowerCase())>=0));
+  const paint=()=>{const L=fil(),G=sum(L.filter(m=>m.k==='g').map(m=>-m.monto)),I=sum(L.filter(m=>m.k==='i').map(m=>m.monto));
+    sumEl.textContent=HIDE()?L.length+' movimientos':L.length+' movimientos · cargos '+money(G)+(I?' · ingresos '+money(I):'');
+    listBox.replaceChildren(...(L.length?L.slice(0,movF.n).map(movRow):[h('div',{class:'muted',style:'padding:10px 0'},'Sin movimientos con este filtro.')]).concat(L.length>movF.n?[h('button',{class:'btn',style:'margin-top:8px',onclick:()=>{movF.n+=40;render()}},'Ver más ('+(L.length-movF.n)+')')]:[]))};
+  const sumEl=h('div',{class:'muted',style:'font-size:12px;margin:8px 0 2px'});
+  q.addEventListener('input',()=>{movF.q=q.value;movF.n=40;paint()});
+  const selM=h('select',{'aria-label':'Mes',onchange:e=>{movF.mes=e.target.value;movF.n=40;render()}},h('option',{value:'',selected:mes===''},'Todos los meses'),meses.map(m=>h('option',{value:m,selected:m===mes},mkLong(m))));
+  const sec=h('section',{class:'card'},h('div',{style:'display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px'},h('h3',{},titulo||'Movimientos'),selM),
+    chips,h('div',{style:'display:flex;gap:8px;margin-top:10px'},q),sumEl,listBox);
+  paint();return sec}
+function viewCuentas(){
+  const root=h('div',{class:'stack'}),all=movsAll(),mes=mesActivo(all);
+  const db=bannerDoble();if(db)root.append(db);
+  const nombres=cuentas().map(c=>c.n);const inMes=m=>!mes||mesDe(m.fecha)===mes;
+  if(all.some(m=>!m.cuenta&&inMes(m)))nombres.push('');
+  const fijos=n=>sum(S.recurrentes.filter(r=>(r.cuenta||'')===n).map(r=>r.monto*(FREQ[r.frecuencia]||1)));
+  const tiles=nombres.map(n=>{
+    const G=S.gastos.filter(g=>(g.cuenta||'')===n&&inMes(g)),I=S.ingresos.filter(i=>i.tipo!=='nomina'&&(i.cuenta||'')===n&&inMes({fecha:i.fecha}));
+    const tot=sum(G.map(g=>g.monto)),ing=sum(I.map(i=>i.neto)),deu=sum(G.filter(g=>g.cat==='deudas').map(g=>g.monto)),fx=fijos(n),t=cuentaTipo(n);
+    const key=n||'__none';
+    return h('button',{type:'button',class:'card tile atile','aria-pressed':String(movF.cuenta===key),onclick:()=>{movF.cuenta=movF.cuenta===key?'':key;movF.n=40;render()}},
+      h('div',{class:'lbl'},n?dotc(n):null,h('b',{style:'color:var(--ink)'},n||'Sin cuenta'),t?h('span',{},'· '+CTIPOS[t]):null),
+      h('div',{class:'val'},fm(tot)),
+      h('div',{class:'det'},G.length+' cargo'+(G.length===1?'':'s')+(mes?' en '+mkLong(mes):' en total')+(ing?' · ingresos '+fm(ing):'')),
+      deu>0?h('div',{class:'det'},'Incluye '+fm(deu)+' de pagos a tarjetas'):null,
+      fx>0?h('div',{class:'det'},'Compromisos fijos ≈ '+fm(fx)+' al mes'):null)});
+  root.append(h('div',{class:'desc',style:'margin:0'},'Toca una cuenta para filtrar los movimientos de abajo. Los totales son cargos del periodo elegido ('+(mes?mkLong(mes):'todos los meses')+').'));
+  root.append(h('div',{class:'grid g3 gacc'},tiles));
+  const tot=nombres.map(n=>({n,v:sum(S.gastos.filter(g=>(g.cuenta||'')===n&&inMes(g)).map(g=>g.monto))})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v),T=sum(tot.map(x=>x.v));
+  if(tot.length>1)root.append(h('section',{class:'card'},h('h3',{},'Reparto de cargos por cuenta'),h('div',{class:'desc'},mes?mkLong(mes):'Todos los meses'),
+    tot.map(x=>h('div',{class:'hbar'},h('div',{class:'nm',title:x.n||'Sin cuenta'},x.n||'Sin cuenta'),h('div',{class:'trk'},h('div',{class:'fill',style:'background:'+(x.n?cuentaCol(x.n):'var(--muted)')+';width:'+Math.max(2,100*x.v/tot[0].v)+'%'})),h('div',{class:'vl'},h('b',{},fm(x.v)),' · '+pc(x.v/T))))));
+  const ms=[...new Set(S.gastos.map(g=>mesDe(g.fecha)))].sort().slice(-6);
+  if(ms.length)root.append(h('section',{class:'card'},h('h3',{},'Cargos por mes y cuenta'),h('div',{class:'desc'},'Últimos '+ms.length+' meses con movimientos.'),
+    h('div',{class:'tscroll'},tableOf(ms.map(mkLong),nombres.map(n=>n||'Sin cuenta'),ms.map(m=>nombres.map(n=>fm2(sum(S.gastos.filter(g=>mesDe(g.fecha)===m&&(g.cuenta||'')===n).map(g=>g.monto)))))))));
+  root.append(movPanel('Movimientos'));
+  return root}
+
+/* =====================================================================
+   RESUMEN PARA EL TELÉFONO (la computadora lo genera; el teléfono lo muestra)
+   ===================================================================== */
+function buildResumen(){
+  const keep=S.settings.horizonte;
+  S.settings.horizonte=6;const A6=analyze(S,TODAY);S.settings.horizonte=keep;
+  const A=analyze(S,TODAY),M=A6.M,ind=A.ind;
+  const pick=a=>a.map(r=>({mk:r.mk,inc:r.inc,exp:r.exp,flow:r.flow,saldo:r.saldo,rec:r.rec,cons:r.cons,deu:r.deu}));
+  const st=x=>x?{level:x.level,icon:x.icon,label:x.label}:null;
+  const cats=Object.keys(M.catAvg).map(id=>({n:catName(id),v:Math.round(M.catAvg[id])})).filter(c=>c.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
+  return{v:1,gen:iso(TODAY),conf:M.conf,nFit:M.nFit,saldoSet:!!M.saldoSet,saldo:M.saldoSet?M.saldo:null,recMonthly:M.recMonthly,horizonte:keep,
+    base:pick(A6.base),cons:pick(A6.cons),opt:pick(A6.opt),
+    hist:M.hist.slice(-6).map(r=>({mk:r.mk,inc:r.incRec,exp:r.expBase})),
+    ind:{n:ind.n,tasa:ind.tasa,tasaS:st(ind.tasaS),avgInc:ind.avgInc,avgExp:ind.avgExp,expTrend:ind.expTrend,expTrendS:st(ind.expTrendS),incTrend:ind.incTrend,incTrendS:st(ind.incTrendS),colchon:ind.colchon,colchonS:st(ind.colchonS),cargaFija:ind.cargaFija,cargaFijaS:st(ind.cargaFijaS),debtShare:ind.debtShare,debtS:st(ind.debtS),horm:ind.horm,hormS:st(ind.hormS),global:st(ind.global)},
+    alts:A.alts.filter(a=>a.mod).slice(0,5).map(a=>({titulo:a.titulo,detalle:a.detalle,ahorro:a.ahorro,saldoFin:a.saldoFin,rec:!!a.recomendada,dif:a.dif})),
+    infos:A.alts.filter(a=>a.info).slice(0,3).map(a=>({titulo:a.titulo,detalle:a.detalle})),
+    diag:A.diag.slice(0,6),cats}}
+function viewPanelMovil(){
+  const R=S.resumen,root=h('div',{class:'stack'});
+  if(!R){return h('section',{class:'card'},h('h3',{},'Aún no hay proyección en el teléfono'),h('div',{class:'desc'},'El análisis riguroso vive en la computadora. Allí, en "Ajustes" → "Llevar la proyección al teléfono", genera un código y pégalo aquí en "Ajustes" → "Recibir proyección". Mientras tanto puedes capturar gastos e ingresos.'),
+    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},h('button',{class:'btn primary',onclick:()=>{tab='captura';render()}},'Ir a Captura rápida'),h('button',{class:'btn',onclick:()=>{tab='datos';render()}},'Recibir proyección')))}
+  const st=S.settings,hz=st.horizonte||3,esc=st.escenario||'base';
+  const main=R[esc].slice(0,hz+1),end=main[main.length-1];
+  const dias=Math.round((TODAY-parse(R.gen))/864e5);
+  root.append(banner(dias>14?'':'info',h('b',{},'Proyección de la computadora · '+fdate(R.gen)+'. '),'Confianza '+R.conf+' ('+R.nFit+' meses de gasto completos). '+(dias>14?'Tiene '+dias+' días: actualízala desde la computadora. ':'')+'No incluye lo que hayas capturado después en el teléfono.'));
+  root.append(h('div',{class:'filters'},
+    h('div',{class:'grp'},h('label',{class:'t'},'Horizonte'),seg([[3,'3 meses'],[4,'4'],[5,'5'],[6,'6 meses']],hz,v=>{st.horizonte=v;commit()},'Horizonte')),
+    h('div',{class:'grp'},h('label',{class:'t'},'Escenario'),seg([['cons','Conservador'],['base','Base'],['opt','Optimista']],esc,v=>{st.escenario=v;commit()},'Escenario'))));
+  /* este mes en el teléfono */
+  const mk=curMes(),capt=sum(S.gastos.filter(g=>g.fecha.slice(0,7)===mk&&g.cat!=='deudas'&&!g.nr&&!g.rec).map(g=>g.monto));
+  const pr=R.base[0]&&R.base[0].mk===mk?R[esc][0].cons:null;
+  if(pr!=null||capt>0)root.append(h('section',{class:'card'},h('h3',{},'Este mes en el teléfono'),h('div',{class:'desc'},'Consumo variable capturado (sin pagos de tarjeta, recurrentes ni extraordinarios) contra lo que proyectó la computadora para '+mkLong(mk)+'.'),
+    h('div',{style:'display:flex;justify-content:space-between;gap:10px;align-items:baseline'},h('span',{class:'val',style:'font-size:26px;font-weight:600'},fm(capt)),h('span',{class:'muted'},pr!=null?'de '+fm(pr)+' proyectado':'sin proyección para este mes')),
+    pr>0?h('div',{class:'trk',style:'height:10px;background:var(--wash);border-radius:5px;margin-top:8px;overflow:hidden'},h('div',{style:'height:10px;border-radius:0 4px 4px 0;background:'+(capt>pr?'var(--crit)':'var(--c-gas)')+';width:'+Math.min(100,100*capt/pr)+'%'})):null,
+    pr>0?h('div',{class:'muted',style:'margin-top:6px;font-size:12px'},capt>pr?'Ya rebasaste lo proyectado ('+pc(capt/pr)+').':'Llevas '+pc(capt/pr)+' de lo proyectado.'):null));
+  root.append(h('div',{class:'card hero'},h('div',{},h('div',{class:'lbl'},(R.saldoSet?'Saldo proyectado':'Flujo acumulado proyectado')+' al cierre de '+mkLong(end.mk)+' · '+(esc==='cons'?'conservador':esc==='opt'?'optimista':'base')),h('div',{class:'big',style:end.saldo<0?'color:var(--crit)':''},fm(end.saldo))),
+    h('div',{class:'note'},h('div',{},'Rango: '+fm(R.cons[hz].saldo)+' a '+fm(R.opt[hz].saldo)),h('div',{},'Flujo mensual proyectado: '+fm(avg(main.slice(1).map(r=>r.flow)))))));
+  const I=R.ind,ch=x=>x?chip(x):null;
+  root.append(h('div',{class:'grid g2 gacc'},
+    tile('Tasa de ahorro',I.tasa==null?'—':pc(I.tasa),'Flujo '+fm(I.avgInc!=null?I.avgInc-I.avgExp:null)+' / mes',I.tasaS),
+    tile('Tendencia de gastos',I.expTrend==null?'—':(I.expTrend>=0?'+':'')+(100*I.expTrend).toFixed(1)+'% /mes','Meses completos',I.expTrendS),
+    tile('Tendencia de ingresos',I.incTrend==null?'—':(I.incTrend>=0?'+':'')+(100*I.incTrend).toFixed(1)+'%','4 sem. vs. 8 previas',I.incTrendS),
+    tile('Colchón',I.colchon==null?'—':I.colchon.toFixed(1)+' meses',R.saldoSet?'Saldo '+fm(R.saldo):'Sin saldo capturado',I.colchonS),
+    tile('Compromisos fijos',I.cargaFija==null?'—':pc(I.cargaFija),fm(R.recMonthly)+' al mes del ingreso',I.cargaFijaS),
+    tile('Pagos de tarjetas',I.debtShare==null?'—':pc(I.debtShare),'De tus egresos de cuenta',I.debtS)));
+  const W=R.hist.length,all=R.hist.map(r=>({mk:r.mk})).concat(main.map(r=>({mk:r.mk}))),nul=R.hist.map(()=>null);
+  const labels=all.map((r,i)=>mkLabel(r.mk,i===0||r.mk.endsWith('-01'))),longs=all.map(r=>mkLong(r.mk));
+  const inc=R.hist.map(r=>r.inc).concat(main.map(r=>r.inc)),exp=R.hist.map(r=>r.exp).concat(main.map(r=>r.exp));
+  root.append(chartCard({title:'Ingresos y gastos',desc:'Historial y proyección (escenario '+esc+'); la franja va del optimista al conservador.',legend:[{name:'Ingresos',color:cssv('c-ing'),line:1},{name:'Gastos',color:cssv('c-gas'),line:1}],
+    draw:host=>lineChart(host,{labels,labelsLong:longs,split:W-1,h:240,aria:'Ingresos y gastos con proyección',series:[{name:'Ingresos',color:cssv('c-ing'),values:inc},{name:'Gastos',color:cssv('c-gas'),values:exp,band:{lo:nul.concat(R.opt.slice(0,hz+1).map(r=>r.exp)),hi:nul.concat(R.cons.slice(0,hz+1).map(r=>r.exp))}}]}),
+    table:()=>tableOf(longs,['Ingresos','Gastos'],all.map((r,i)=>[fm(inc[i]),fm(exp[i])]))}));
+  root.append(chartCard({title:R.saldoSet?'Saldo proyectado':'Flujo acumulado proyectado',desc:'Al cierre de cada mes; la franja va del conservador al optimista.',legend:[{name:R.saldoSet?'Saldo':'Flujo acumulado',color:cssv('c-sal'),line:1}],
+    draw:host=>lineChart(host,{labels:main.map((r,i)=>mkLabel(r.mk,i===0||r.mk.endsWith('-01'))),labelsLong:main.map(r=>mkLong(r.mk)),split:null,h:240,aria:'Saldo proyectado por mes',series:[{name:R.saldoSet?'Saldo':'Flujo acumulado',color:cssv('c-sal'),values:main.map(r=>r.saldo),band:{lo:R.cons.slice(0,hz+1).map(r=>r.saldo),hi:R.opt.slice(0,hz+1).map(r=>r.saldo)}}]}),
+    table:()=>tableOf(main.map(r=>mkLong(r.mk)),['Conservador','Seleccionado','Optimista'],main.map((r,i)=>[fm(R.cons[i].saldo),fm(r.saldo),fm(R.opt[i].saldo)]))}));
+  root.append(h('section',{class:'card'},h('div',{style:'display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center'},h('h3',{},'Diagnóstico del analista'),ch(I.global)),h('div',{class:'stack',style:'margin-top:10px'},R.diag.map(t=>h('p',{style:'margin:0'},t)))));
+  if(R.alts.length||R.infos.length)root.append(h('section',{class:'card'},h('h3',{},'Alternativas'),h('div',{class:'desc'},'Para aplicarlas y ver su efecto en el gráfico, usa la computadora. Ahorro mensual y saldo a '+(R.horizonte||3)+' meses.'),
+    R.alts.map(a=>h('div',{class:'alt',style:'grid-template-columns:1fr auto'},h('div',{},h('h4',{},a.titulo),h('p',{},a.detalle),h('div',{class:'meta'},a.rec?h('span',{class:'pill rec'},'Recomendada'):null,h('span',{class:'pill'},'Esfuerzo: '+['','bajo','medio','alto'][a.dif]))),h('div',{class:'imp'},h('b',{},fm(a.ahorro)),h('span',{},'al mes'),h('span',{},'saldo final '+fm(a.saldoFin))))),
+    R.infos.map(a=>h('div',{class:'alt',style:'grid-template-columns:1fr'},h('div',{},h('h4',{},a.titulo),h('p',{},a.detalle))))));
+  if(R.cats&&R.cats.length)root.append(h('section',{class:'card'},h('h3',{},'Gasto por categoría'),h('div',{class:'desc'},'Promedio mensual de los meses completos.'),R.cats.map(c=>h('div',{class:'hbar'},h('div',{class:'nm',title:c.n},c.n),h('div',{class:'trk'},h('div',{class:'fill',style:'width:'+Math.max(2,100*c.v/R.cats[0].v)+'%'})),h('div',{class:'vl'},h('b',{},fm(c.v)))))));
+  return root}
+
+/* =====================================================================
+   VISTA: CAPTURA
+   ===================================================================== */
+function field(label,input){return h('div',{class:'fld'},h('label',{},label),input)}
+const catSelect=(val)=>h('select',{},CATS.map(c=>h('option',{value:c.id,selected:c.id===val},c.n)));
+function viewCaptura(){
+  const root=h('div',{class:'stack'}),today=iso(TODAY);
+  const db=bannerDoble();if(db)root.append(db);
+  root.append(quickCapture());
+  root.append(movPanel('Últimos movimientos'));
+  const nBase=root.children.length;
+  /* recurrentes */
+  const r={con:h('input',{type:'text',placeholder:'Ej. Renta',maxlength:60,required:true}),cat:catSelect('vivienda'),monto:h('input',{type:'number',step:'0.01',min:'0.01',required:true}),fr:h('select',{},Object.keys(FREQ).map(k=>h('option',{value:k,selected:k==='mensual'},k))),ini:h('input',{type:'date',value:today,required:true}),fin:h('input',{type:'date'}),cu:cuentaSelect(S.settings.ultimaCuenta||'')};
+  root.append(h('section',{class:'card'},h('h3',{},'Pagos recurrentes'),h('div',{class:'desc'},'Se proyectan por calendario (fecha de inicio y frecuencia). Equivalente mensual total: '+fm(sum(S.recurrentes.map(x=>x.monto*(FREQ[x.frecuencia]||1))))+'.'),
+    h('form',{class:'f',onsubmit:e=>{e.preventDefault();const m=parseFloat(r.monto.value);if(!(m>0))return;S.recurrentes.push({id:uid(),concepto:r.con.value.trim(),cat:r.cat.value,monto:m,frecuencia:r.fr.value,inicio:r.ini.value,fin:r.fin.value||null,cuenta:r.cu.value});commit('Pago recurrente agregado')}},
+      field('Concepto',r.con),field('Categoría',r.cat),field('Monto',r.monto),field('Cuenta del cargo',r.cu),field('Frecuencia',r.fr),field('Inicio',r.ini),field('Fin (opcional)',r.fin),h('button',{class:'btn primary',type:'submit'},'Agregar')),
+    h('div',{class:'tscroll',style:'margin-top:10px'},h('table',{class:'t'},h('thead',{},h('tr',{},['Concepto','Cuenta','Categoría','Frecuencia','Monto','≈ Mensual',''].map(x=>h('th',{},x)))),
+      h('tbody',{},S.recurrentes.map(x=>h('tr',{},h('td',{},x.concepto),h('td',{style:'text-align:left'},x.cuenta||'—'),h('td',{style:'text-align:left'},catName(x.cat)),h('td',{},x.frecuencia+' desde '+fdate(x.inicio)+(x.fin?' hasta '+fdate(x.fin):'')),h('td',{},fm2(x.monto)),h('td',{},fm(x.monto*(FREQ[x.frecuencia]||1))),h('td',{},h('button',{class:'btn small',onclick:()=>{S.recurrentes=S.recurrentes.filter(y=>y!==x);commit()}},'Borrar')))))))));
+  /* ingresos */
+  const n={fecha:h('input',{type:'date',value:today,required:true}),neto:h('input',{type:'number',step:'0.01',min:'0.01',required:true}),bruto:h('input',{type:'number',step:'0.01',min:'0'}),vales:h('input',{type:'number',step:'0.01',min:'0'})};
+    root.append(h('section',{class:'card'},h('h3',{},'Ingresos'),h('div',{class:'desc'},'Agrega aquí el recibo de nómina de cada semana (neto depositado). Para otros ingresos usa "Captura rápida" → Ingreso.'),
+    h('form',{class:'f',onsubmit:e=>{e.preventDefault();const v=parseFloat(n.neto.value);if(!(v>0))return;S.ingresos.push({id:uid(),fecha:n.fecha.value,tipo:'nomina',concepto:'Nómina semanal',neto:v,bruto:parseFloat(n.bruto.value)||undefined,vales:parseFloat(n.vales.value)||0});commit('Recibo agregado')}},
+      field('Fecha del recibo',n.fecha),field('Neto recibido',n.neto),field('Bruto (opcional)',n.bruto),field('Vales (opcional)',n.vales),h('button',{class:'btn primary',type:'submit'},'Agregar nómina'))));
+  /* eventos */
+  const ev={fecha:h('input',{type:'date',required:true}),con:h('input',{type:'text',placeholder:'Ej. aguinaldo',required:true,maxlength:60}),monto:h('input',{type:'number',step:'0.01',min:'0.01',required:true}),tipo:h('select',{},h('option',{value:'ingreso'},'Ingreso'),h('option',{value:'gasto'},'Gasto'))};
+  const sd=S.nomInfo&&S.nomInfo.salarioDiario;
+  root.append(h('section',{class:'card'},h('h3',{},'Eventos esperados'),h('div',{class:'desc'},'Ingresos o gastos futuros que no siguen una tendencia: aguinaldo, vacaciones, tenencia, un viaje.'),
+    h('form',{class:'f',onsubmit:e=>{e.preventDefault();const v=parseFloat(ev.monto.value);if(!(v>0)||!ev.fecha.value)return;S.eventos.push({id:uid(),fecha:ev.fecha.value,concepto:ev.con.value.trim(),monto:v,tipo:ev.tipo.value});commit('Evento agregado')}},
+      field('Fecha',ev.fecha),field('Concepto',ev.con),field('Monto',ev.monto),field('Tipo',ev.tipo),h('button',{class:'btn primary',type:'submit'},'Agregar evento'),
+      sd?h('button',{class:'btn',type:'button',onclick:()=>{ev.fecha.value=TODAY.getFullYear()+'-12-15';ev.con.value='Aguinaldo (estimado, mínimo legal)';ev.monto.value=(15*sd).toFixed(2);ev.tipo.value='ingreso';toast('Mínimo legal: 15 días de salario diario, antes de impuestos; ajusta al neto real.')}},'Sugerir aguinaldo'):null),
+    S.eventos.length?h('div',{class:'tscroll',style:'margin-top:10px'},h('table',{class:'t'},h('tbody',{},S.eventos.map(x=>h('tr',{},h('td',{},fdate(x.fecha)),h('td',{},x.concepto+' ('+x.tipo+')'),h('td',{},fm2(x.monto)),h('td',{},h('button',{class:'btn small',onclick:()=>{S.eventos=S.eventos.filter(y=>y!==x);commit()}},'Borrar'))))))):null));
+  /* CSV */
+  const ta=h('textarea',{rows:5,placeholder:'fecha;categoria;concepto;monto;cuenta\n2026-11-03;alimentos;Despensa;412.50;Nu',style:'width:100%;background:var(--page);border:1px solid var(--border);border-radius:8px;padding:8px'});
+  const csvCu=cuentaSelect('');csvCu.title='Cuenta para las filas que no traigan una';
+  const sgn=h('select',{},h('option',{value:'pos'},'Los gastos son montos positivos'),h('option',{value:'neg'},'Los gastos son montos negativos (cargos)'));
+  root.append(h('section',{class:'card'},h('h3',{},'Importar gastos desde CSV'),h('div',{class:'desc'},'Pega filas o elige un archivo (.csv). Columnas: fecha (AAAA-MM-DD o DD/MM/AAAA), categoría, concepto, monto y, opcional, cuenta (si la primera fila trae encabezados se leen por nombre). Acepta coma, punto y coma o tabulador. Todo se procesa en este equipo.'),
+    ta,h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center'},sgn,csvCu,h('input',{type:'file',accept:'.csv,text/csv,text/plain',onchange:e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{ta.value=String(rd.result)};rd.readAsText(fl)}}),h('button',{class:'btn primary',onclick:()=>importCsv(ta.value,sgn.value,csvCu.value)},'Importar'))));
+  if(BUILD_MOVIL){const extra=[...root.children].slice(nBase);extra.forEach(x=>x.remove());
+    const keep=extra.filter(x=>!/^Ingresos$/.test((x.querySelector('h3')||{}).textContent||''));
+    root.append(h('details',{class:'card'},h('summary',{},'Más opciones: pagos recurrentes, eventos e importar CSV'),h('div',{class:'stack',style:'margin-top:12px'},keep)))}
+  return root}
+let capMes='';
+function importCsv(text,sign,cuentaDef){
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);if(!lines.length)return toast('No hay filas para importar');
+  const dl=[';','\t',','].find(d=>lines[0].indexOf(d)>=0)||',';let ok=0,skip=0;
+  const norm=x=>(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const catId=s=>{const u=norm(s);const c=CATS.find(c=>c.id===u||norm(c.n)===u||norm(c.n).startsWith(u)&&u.length>2);return c?c.id:'otros'};
+  const cuId=s=>{const u=norm(s);const c=cuentas().find(c=>norm(c.n)===u);return c?c.n:(cuentaDef||'')};
+  const head=lines[0].split(dl).map(norm),hasHead=head.indexOf('fecha')>=0&&head.indexOf('monto')>=0;
+  const col=hasHead?{f:head.indexOf('fecha'),c:head.indexOf('categoria'),o:head.indexOf('concepto'),m:head.indexOf('monto'),u:head.indexOf('cuenta')}:null;
+  lines.forEach((l,i)=>{if(hasHead&&i===0)return;const c=l.split(dl).map(x=>x.trim().replace(/^"|"$/g,''));if(c.length<3)return skip++;
+    let d=col?c[col.f]:c[0];const m=(d||'').match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);if(m)d=m[3]+'-'+pad(+m[2])+'-'+pad(+m[1]);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d||'')){if(i>0)skip++;return}
+    const raw=col?c[col.m]:c[c.length-1];const amt=parseFloat((raw||'').replace(/[$\s]/g,'').replace(/,(?=\d{3}\b)/g,'').replace(',','.'));if(isNaN(amt))return skip++;
+    const ok2=sign==='pos'?amt>0:amt<0;if(!ok2)return skip++;
+    const cat=col?(col.c>=0?c[col.c]:'otros'):(c.length>=4?c[1]:'otros'),con=col?(col.o>=0?c[col.o]:cat):(c.length>=4?c[2]:c[1]),cu=col&&col.u>=0?cuId(c[col.u]):(cuentaDef||'');
+    S.gastos.push({id:uid(),fecha:d,cat:catId(cat),concepto:(con||catName(catId(cat))).slice(0,60),monto:Math.abs(amt),rec:false,nr:false,src:'csv',cuenta:cu});ok++});
+  commit(ok+' gastos importados'+(skip?' · '+skip+' filas omitidas':''))}
+
+/* =====================================================================
+   VISTA: NÓMINA Y BANCO
+   ===================================================================== */
+function viewNomina(){
+  const root=h('div',{class:'stack'}),nom=S.ingresos.filter(i=>i.tipo==='nomina').sort((a,b)=>a.fecha<b.fecha?-1:1);
+  const last8=nom.slice(-8),neto=avg(last8.map(i=>i.neto)),bruto=avg(last8.map(i=>i.bruto||0));
+  const fx=k=>avg(last8.map(i=>i[k]||0));
+  const imp=fx('imp')+fx('imss'),ah=fx('caja')+fx('foah'),pr=fx('amort'),totDed=avg(last8.map(i=>i.ded||0)),otros=Math.max(0,totDed-imp-ah-pr);
+  const info=S.nomInfo||{},weeksLeft=info.amort>0?Math.ceil(info.saldoPrestamo/info.amort):null;
+  let fin=null;if(weeksLeft&&info.fecha){const d=parse(info.fecha);d.setDate(d.getDate()+7*weeksLeft);fin=iso(d)}
+  root.append(h('div',{class:'grid g4'},tile('Neto semanal (prom. 8 sem.)',fm(neto),'≈ '+fm(neto*52/12)+' al mes',null),tile('Bruto semanal',fm(bruto),'Deducciones: '+pc(bruto?totDed/bruto:0)+' del bruto',null),
+    tile('Ahorro retenido por semana',fm(ah),'Caja de ahorro + fondo de ahorro',null),tile('Amortización de préstamo',fm(pr),weeksLeft?'Quedan ≈'+weeksLeft+' pagos (hasta '+fdate(fin)+')':'—',null)));
+  const parts=[{n:'Neto',v:neto,c:'c-ing'},{n:'Impuestos e IMSS',v:imp,c:'c-gas'},{n:'Ahorro retenido',v:ah,c:'c-sal'},{n:'Préstamo',v:pr,c:'c-amar',y:1},{n:'Otros (comedor, adelanto…)',v:otros,c:'c-mag'}].filter(p=>p.v>.5);
+  const tot=sum(parts.map(p=>p.v));
+  root.append(h('section',{class:'card'},h('h3',{},'Del bruto al neto'),h('div',{class:'desc'},'Promedio de tus últimos '+last8.length+' recibos.'),
+    h('div',{class:'sbar',role:'img','aria-label':'Composición del bruto semanal'},parts.map(p=>h('div',{class:p.y?'y':'',style:'background:var(--'+p.c+');width:'+(100*p.v/tot)+'%',title:p.n+': '+fm(p.v)},100*p.v/tot>9?Math.round(100*p.v/tot)+'%':''))),
+    h('div',{class:'legend',style:'margin-top:8px'},parts.map(p=>h('span',{},h('i',{class:'sw',style:'background:var(--'+p.c+')'}),p.n+' · '+fm(p.v))))));
+  /* neto semanal */
+  const l26=nom.slice(-26);const labs=l26.map(i=>fdate(i.fecha));
+  root.append(chartCard({title:'Neto por semana',desc:'Últimos '+l26.length+' recibos. Desde la semana del 21 jun baja porque entró la amortización del préstamo de caja de ahorro.',
+    draw:host=>barChart(host,{labels:l26.map((i,k)=>k%3===0?i.fecha.slice(5).replace('-','/'):''),labelsLong:labs,h:220,aria:'Neto semanal',series:[{name:'Neto',color:cssv('c-ing'),values:l26.map(i=>i.neto)}]}),
+    table:()=>tableOf(labs,['Bruto','Deducciones','Neto','Vales'],l26.map(i=>[fm2(i.bruto),fm2(i.ded),fm2(i.neto),fm2(i.vales||0)]))}));
+  /* saldos bancarios */
+  const sd=S.saldos||[];
+  if(sd.length)root.append(chartCard({title:'Saldos de tus estados de cuenta',desc:'Saldo de la cuenta de cheques y de Ahorro Fácil en cada corte.',legend:[{name:'Cuenta',color:cssv('c-ing'),line:1},{name:'Ahorro Fácil',color:cssv('c-sal'),line:1},{name:'Total líquido',color:cssv('c-gas'),line:1}],
+    draw:host=>lineChart(host,{labels:sd.map(x=>fdate(x[0]).replace(/ \d+$/,'')),labelsLong:sd.map(x=>'Corte al '+fdate(x[0])),split:null,h:240,aria:'Saldos por corte',series:[{name:'Cuenta',color:cssv('c-ing'),values:sd.map(x=>x[1])},{name:'Ahorro Fácil',color:cssv('c-sal'),values:sd.map(x=>x[2])},{name:'Total líquido',color:cssv('c-gas'),values:sd.map(x=>x[1]+x[2])}]}),
+    table:()=>tableOf(sd.map(x=>'Corte al '+fdate(x[0])),['Cuenta','Ahorro Fácil','Total'],sd.map(x=>[fm2(x[1]),fm2(x[2]),fm2(x[1]+x[2])]))}));
+  /* movimientos extraordinarios */
+  const mv=(S.movimientos||[]).slice().sort((a,b)=>a.fecha<b.fecha?-1:1);
+  if(mv.length)root.append(h('section',{class:'card'},h('h3',{},'Entradas extraordinarias de efectivo'),h('div',{class:'desc'},'No son ingreso recurrente: se muestran aparte y no entran a la proyección.'),
+    h('table',{class:'t'},h('thead',{},h('tr',{},['Fecha','Concepto','Tipo','Monto'].map(x=>h('th',{},x)))),h('tbody',{},mv.map(x=>h('tr',{},h('td',{},fdate(x.fecha)),h('td',{},x.concepto),h('td',{},x.tipo),h('td',{},fm2(x.monto))))))));
+  if(info.fecha)root.append(h('section',{class:'card'},h('h3',{},'Ahorro y préstamo según tu último recibo ('+fdate(info.fecha)+')'),
+    h('div',{class:'grid g3',style:'margin-top:8px'},tile('Total ahorro (caja)',fm2(info.totAhorro),null,null),tile('Fondo de ahorro (FA)',fm2(info.saldoFA),null,null),tile('Saldo del préstamo',fm2(info.saldoPrestamo),null,null)),
+    h('p',{class:'muted',style:'margin:10px 0 0'},'Los importes se toman tal cual vienen en el recibo. Si la tasa del préstamo es mayor que lo que rinde tu ahorro, vale la pena preguntar en tu caja si conviene liquidarlo parcial o totalmente.')));
+  return root}
+
+/* =====================================================================
+   VISTA: DATOS Y AJUSTES
+   ===================================================================== */
+function viewDatos(){
+  const st=S.settings,root=h('div',{class:'stack'});
+  const num=(v,fn,o)=>h('input',Object.assign({type:'number',step:'0.01',value:v==null?'':v,onchange:e=>{fn(e.target.value===''?null:parseFloat(e.target.value));commit()}},o||{}));
+  if(BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Apariencia'),h('form',{class:'f',onsubmit:e=>e.preventDefault()},field('Tema',h('select',{onchange:e=>{st.tema=e.target.value;applyTheme();save()}},[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(o=>h('option',{value:o[0],selected:st.tema===o[0]},o[1])))))));
+  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Ajustes'),h('form',{class:'f',style:'margin-top:8px',onsubmit:e=>e.preventDefault()},
+    field('Saldo actual disponible ($)',num(st.saldo,v=>st.saldo=v)),
+    field('Meta de tasa de ahorro (%)',num(st.metaAhorro,v=>st.metaAhorro=v==null?10:v)),
+    field('Meses de fondo de emergencia',num(st.mesesFondo,v=>st.mesesFondo=v==null?3:v)),
+    field('Umbral de gasto hormiga ($)',num(st.umbralHormiga,v=>st.umbralHormiga=v==null?100:v)),
+    field('Abonos variables a tarjetas',h('select',{onchange:e=>{st.deudasVar=e.target.value;commit()}},h('option',{value:'incluir',selected:st.deudasVar!=='excluir'},'Incluir (promedio histórico)'),h('option',{value:'excluir',selected:st.deudasVar==='excluir'},'Excluir de la proyección'))),
+    field('Tema',h('select',{onchange:e=>{st.tema=e.target.value;applyTheme();save()}},[['auto','Automático'],['light','Claro'],['dark','Oscuro']].map(o=>h('option',{value:o[0],selected:st.tema===o[0]},o[1])))),
+    h('div',{class:'fld chk'},h('input',{type:'checkbox',id:'ck1',checked:st.estimarFaltantes,onchange:e=>{st.estimarFaltantes=e.target.checked;commit()}}),h('label',{for:'ck1'},'Estimar semanas sin recibo de nómina')),
+    h('div',{class:'fld chk'},h('input',{type:'checkbox',id:'ck2',checked:st.incluirVales,onchange:e=>{st.incluirVales=e.target.checked;commit()}}),h('label',{for:'ck2'},'Contar vales del recibo como ingreso')))));
+  const c=st.cobertura||(st.cobertura={desde:null,hasta:null,huecos:[]});
+  const hd={a:h('input',{type:'date'}),b:h('input',{type:'date'})};
+  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Cobertura de gastos'),h('div',{class:'desc'},'Un mes solo entra a la tendencia si todos sus días están dentro de la cobertura y fuera de los huecos. Déjala vacía para usar todos los meses desde tu primer gasto.'),
+    h('form',{class:'f',onsubmit:e=>e.preventDefault()},field('Datos completos desde',h('input',{type:'date',value:c.desde||'',onchange:e=>{c.desde=e.target.value||null;if(!c.desde)c.hasta=null;commit()}})),field('Datos completos hasta',h('input',{type:'date',value:c.hasta||'',onchange:e=>{c.hasta=e.target.value||null;commit()}}))),
+    h('div',{style:'margin-top:10px'},(c.huecos||[]).map((x,i)=>h('div',{style:'display:flex;gap:8px;align-items:center;margin:4px 0'},h('span',{},'Sin datos del '+fdate(x[0])+' al '+fdate(x[1])),h('button',{class:'btn small',onclick:()=>{c.huecos.splice(i,1);commit()}},'Quitar')))),
+    h('form',{class:'f',style:'margin-top:8px',onsubmit:e=>{e.preventDefault();if(!hd.a.value||!hd.b.value)return;(c.huecos=c.huecos||[]).push([hd.a.value,hd.b.value]);commit('Hueco agregado')}},field('Hueco desde',hd.a),field('Hueco hasta',hd.b),h('button',{class:'btn',type:'submit'},'Agregar hueco'))));
+  /* proyección hacia el teléfono */
+  const codeBox=(label,make,help)=>{const ta=h('textarea',{class:'synctxt',rows:4,readonly:true,placeholder:'Pulsa "Generar código"'});
+    const copy=()=>{ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}if(!ok&&navigator.clipboard)navigator.clipboard.writeText(ta.value).then(()=>toast('Código copiado'),()=>toast('Selecciona el texto y cópialo'));else toast(ok?'Código copiado':'Selecciona el texto y cópialo')};
+    return h('div',{},h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin:8px 0'},
+      h('button',{class:'btn primary',type:'button',onclick:()=>{try{ta.value=make();toast('Código generado')}catch(e){toast('No se pudo generar')}}},'Generar código'),
+      h('button',{class:'btn',type:'button',onclick:()=>{if(!ta.value)return toast('Primero genera el código');copy()}},'Copiar'),
+      navigator.share?h('button',{class:'btn',type:'button',onclick:()=>{if(!ta.value)return toast('Primero genera el código');navigator.share({title:label,text:ta.value}).catch(()=>{})}},'Compartir…'):null,
+      h('button',{class:'btn',type:'button',onclick:()=>{if(!ta.value)return toast('Primero genera el código');download('proyeccion-telefono.txt',ta.value,'text/plain')}},'Descargar archivo')),ta)};
+  const encP=o=>'GP1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o,(k,v)=>typeof v==='number'?(Math.abs(v)>=100?Math.round(v):Math.round(v*10000)/10000):v))));
+  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Llevar la proyección al teléfono'),h('div',{class:'desc'},'Genera un resumen con las proyecciones más relevantes (3 a 6 meses, tres escenarios, indicadores, diagnóstico y alternativas). Solo contiene cifras agregadas, no recibos ni movimientos. Pégalo en el teléfono, en "Ajustes" → "Recibir proyección".'),codeBox('Proyección',()=>encP(buildResumen()))));
+  if(BUILD_MOVIL){
+    const inp=h('textarea',{class:'synctxt',rows:4,placeholder:'Pega aquí el código de proyección generado en la computadora'});
+    const fileP=h('input',{type:'file',accept:'.txt,text/plain',onchange:e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{inp.value=String(rd.result)};rd.readAsText(fl)}});
+    root.append(h('section',{class:'card'},h('h3',{},'Recibir proyección de la computadora'),h('div',{class:'desc'},S.resumen?'Proyección actual generada el '+fdate(S.resumen.gen)+'. Pega un código nuevo para actualizarla.':'Aún no has recibido ninguna proyección.'),
+      inp,h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px'},fileP,h('button',{class:'btn primary',type:'button',onclick:()=>{try{const t=inp.value.trim();if(t.slice(0,4)!=='GP1:')throw 0;const o=JSON.parse(decodeURIComponent(escape(atob(t.slice(4).replace(/\s+/g,'')))));if(!o||o.v!==1||!Array.isArray(o.base))throw 0;S.resumen=o;tab='panel';commit('Proyección recibida')}catch(x){toast('El código no es válido')}}},'Recibir'))))}
+  /* cuentas */
+  const nc={n:h('input',{type:'text',maxlength:24,placeholder:'Ej. BBVA, Santander, Mercado Pago'}),t:h('select',{},Object.keys(CTIPOS).map(k=>h('option',{value:k,selected:k==='credito'},CTIPOS[k])))};
+  root.append(h('section',{class:'card'},h('h3',{},'Cuentas y tarjetas'),h('div',{class:'desc'},'Son las opciones de "Cuenta" al capturar. El tipo sirve para avisarte si cuentas dos veces el consumo con tarjeta (la compra y luego el pago de la tarjeta).'),
+    h('div',{class:'stack'},cuentas().map((c,i)=>h('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap'},dotc(c.n),h('b',{style:'min-width:90px'},c.n),
+      (()=>{const sl=h('select',{'aria-label':'Tipo de '+c.n},Object.keys(CTIPOS).map(k=>h('option',{value:k,selected:c.t===k},CTIPOS[k])));sl.onchange=()=>{c.t=sl.value;commit()};return sl})(),
+      h('button',{class:'btn small',type:'button',onclick:()=>{const n=S.gastos.filter(g=>g.cuenta===c.n).length+S.ingresos.filter(g=>g.cuenta===c.n).length+S.recurrentes.filter(g=>g.cuenta===c.n).length;if(confirm('¿Quitar "'+c.n+'" de la lista?'+(n?' Sus '+n+' movimientos conservarán el nombre pero quedarán sin cuenta en los filtros.':''))){S.settings.cuentas.splice(i,1);commit()}}},'Quitar')))),
+    h('form',{class:'f',style:'margin-top:12px',onsubmit:e=>{e.preventDefault();const n=nc.n.value.trim();if(!n)return;if(cuentaIdx(n)>=0)return toast('Esa cuenta ya existe');S.settings.cuentas.push({n,t:nc.t.value});commit('Cuenta agregada')}},field('Nueva cuenta',nc.n),field('Tipo',nc.t),h('button',{class:'btn',type:'submit'},'Agregar'))));
+  /* sincronización */
+  const out=h('textarea',{class:'synctxt',rows:4,readonly:true,placeholder:'Pulsa "Generar código"'}),inp=h('textarea',{class:'synctxt',rows:4,placeholder:'Pega aquí el código que generaste en el otro dispositivo'});
+  const bag=()=>({v:1,gastos:S.gastos.filter(x=>/^u/.test(x.id||'')),ingresos:S.ingresos.filter(x=>/^u/.test(x.id||'')),recurrentes:S.recurrentes.filter(x=>/^u/.test(x.id||'')),eventos:S.eventos.filter(x=>/^u/.test(x.id||'')),cuentas:cuentas()});
+  const enc=o=>'GG1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  const dec=t=>{t=t.trim();if(t.slice(0,4)==='GP1:')throw 0;if(t.slice(0,4)==='GG1:')return JSON.parse(decodeURIComponent(escape(atob(t.slice(4).replace(/\s+/g,'')))));return JSON.parse(t)};
+  const merge=o=>{if(!o||o.v!==1)throw 0;let n=0;const idsOf=a=>new Set(a.map(x=>x.id));
+    [['gastos'],['ingresos'],['recurrentes'],['eventos']].forEach(k=>{const have=idsOf(S[k[0]]);(o[k[0]]||[]).forEach(x=>{if(x&&x.id&&!have.has(x.id)){S[k[0]].push(x);have.add(x.id);n++}})});
+    (o.cuentas||[]).forEach(c=>{if(c&&c.n&&cuentaIdx(c.n)<0)S.settings.cuentas.push({n:String(c.n).slice(0,24),t:CTIPOS[c.t]?c.t:'debito'})});return n};
+  const copy=()=>{out.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}if(!ok&&navigator.clipboard)navigator.clipboard.writeText(out.value).then(()=>toast('Código copiado'),()=>toast('Selecciona el texto y cópialo'));else toast(ok?'Código copiado':'Selecciona el texto y cópialo')};
+  const fileSync=h('input',{type:'file',accept:'.txt,.json,text/plain,application/json',onchange:e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{inp.value=String(rd.result)};rd.readAsText(fl)}});
+  root.append(h('section',{class:'card'},h('h3',{},'Sincronizar teléfono y computadora'),h('div',{class:'desc'},'Lo que captures en un dispositivo (gastos, ingresos, pagos recurrentes y eventos) se pasa al otro con un código de texto. Se fusiona sin duplicar y no borra nada.'),
+    h('b',{},'1. Enviar mis capturas'),
+    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;margin:8px 0'},
+      h('button',{class:'btn primary',type:'button',onclick:()=>{const b=bag();out.value=enc(b);toast((b.gastos.length+b.ingresos.length+b.recurrentes.length+b.eventos.length)+' capturas en el código')}},'Generar código'),
+      h('button',{class:'btn',type:'button',onclick:()=>{if(!out.value)return toast('Primero genera el código');copy()}},'Copiar'),
+      navigator.share?h('button',{class:'btn',type:'button',onclick:()=>{if(!out.value)return toast('Primero genera el código');navigator.share({title:'Gastos',text:out.value}).catch(()=>{})}},'Compartir…'):null,
+      h('button',{class:'btn',type:'button',onclick:()=>{if(!out.value)return toast('Primero genera el código');download('gastos-sync.txt',out.value,'text/plain')}},'Descargar archivo')),
+    out,
+    h('div',{style:'margin-top:14px'},h('b',{},'2. Recibir capturas del otro dispositivo')),
+    h('div',{style:'margin:8px 0'},inp),
+    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;align-items:center'},fileSync,h('button',{class:'btn primary',type:'button',onclick:()=>{try{const n=merge(dec(inp.value));inp.value='';commit(n+' capturas nuevas agregadas')}catch(x){toast('El código no es válido')}}},'Fusionar'))));
+  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Usarlo en el teléfono'),
+    h('ul',{style:'margin:8px 0 0;padding-left:18px'},
+      h('li',{},'Instala la versión móvil (sin datos) con su ícono en la pantalla de inicio; los pasos vienen en el paquete de instalación.'),
+      h('li',{},'Captura en el teléfono con "Captura rápida" y pasa las capturas a la computadora con el código de sincronización de arriba.'),
+      h('li',{},'Lleva las proyecciones al teléfono con "Llevar la proyección al teléfono". Haz un respaldo (JSON) de vez en cuando.'))));
+  if(BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Ícono en la pantalla de inicio'),
+    h('ul',{style:'margin:8px 0 0;padding-left:18px'},
+      h('li',{},h('b',{},'iPhone: '),'abre la dirección web en Safari → botón Compartir → "Agregar a inicio". Captura siempre desde ese ícono: Safari y el ícono guardan los datos por separado.'),
+      h('li',{},h('b',{},'Android: '),'abre la dirección web en Chrome → menú ⋮ → "Instalar app" o "Agregar a la pantalla de inicio".'),
+      h('li',{},'Funciona sin internet una vez abierta la primera vez. Tus datos se quedan en este teléfono.'))));
+  const fileIn=h('input',{type:'file',accept:'.json,application/json',onchange:e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||o.v!==2||!Array.isArray(o.gastos))throw 0;S=migrate(o);commit('Respaldo restaurado')}catch(x){toast('Archivo no válido')}};rd.readAsText(fl)}});
+  root.append(h('section',{class:'card'},h('h3',{},'Respaldo y privacidad'),h('div',{class:'desc'},'Esta herramienta no se conecta a internet (lo bloquea el propio archivo). Tus datos se guardan en este navegador; haz respaldos con regularidad.'+(store?'':' ⚠ Este navegador no permite guardar: exporta tu respaldo antes de cerrar.')),
+    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap;align-items:center'},
+      h('button',{class:'btn',onclick:()=>download('gestor-gastos-respaldo.json',JSON.stringify(S),'application/json')},'Exportar respaldo (JSON)'),
+      h('button',{class:'btn',onclick:()=>download('gastos.csv','fecha;categoria;concepto;monto;cuenta;recurrente;no_recurrente\n'+S.gastos.map(g=>[g.fecha,g.cat,'"'+g.concepto.replace(/"/g,'""')+'"',g.monto,'"'+(g.cuenta||'')+'"',g.rec?1:0,g.nr?1:0].join(';')).join('\n'),'text/csv')},'Exportar gastos (CSV)'),
+      h('label',{class:'btn'},'Restaurar respaldo ',fileIn),
+      h('button',{class:'btn danger',onclick:()=>{if(confirm('¿Restablecer todo a los datos iniciales (recibos y estados de cuenta cargados)? Se perderán tus cambios.')){S=seedState();commit('Datos restablecidos')}}},'Restablecer datos iniciales'),
+      h('button',{class:'btn danger',onclick:()=>{if(confirm('¿Borrar TODOS los datos de este navegador, incluidos recibos y gastos?')){try{localStorage.removeItem(LS)}catch(e){}S=seedState();S.ingresos=[];S.gastos=[];S.recurrentes=[];S.movimientos=[];S.saldos=[];S.nomInfo=null;S.settings.cobertura={desde:null,hasta:null,huecos:[]};commit('Datos borrados')}}},'Borrar todo'))));
+  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Cómo se calcula'),h('ul',{style:'margin:8px 0 0;padding-left:18px'},
+    h('li',{},h('b',{},'Ingresos: '),'neto de tus recibos. Se proyecta el promedio de las últimas 8 semanas × los días de pago de cada mes (los meses con 5 domingos suman una semana extra). Los extraordinarios (PTU, bonos) no se proyectan.'),
+    h('li',{},h('b',{},'Pagos recurrentes: '),'se proyectan por calendario, sin tendencia.'),
+    h('li',{},h('b',{},'Consumo variable: '),'regresión lineal sobre los meses completos de la ventana; la pendiente se atenúa con pocos datos y se amortigua al alejarse del último mes con datos (factor 0.75 por mes) y se limita a ±12% del promedio.'),
+    h('li',{},h('b',{},'Abonos a tarjetas: '),'promedio histórico sin tendencia (su monto lo decides tú); puedes excluirlos arriba.'),
+    h('li',{},h('b',{},'Escenarios: '),'conservador = gasto en el límite alto de la franja (≈ ±1 desviación); optimista = límite bajo.'),
+    h('li',{},h('b',{},'Confianza: '),'alta con ≥5 meses completos y datos recientes; media con ≥3; baja en otro caso.'),
+    h('li',{},h('b',{},'Limitación: '),'si pagas tarjetas desde esta cuenta, el consumo hecho con esas tarjetas no se ve hasta que subas sus estados.'))));
+  return root}
+function download(name,text,type){const a=h('a',{href:URL.createObjectURL(new Blob([text],{type})),download:name});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+/* =====================================================================
+   ARMADO
+   ===================================================================== */
+function applyTheme(){const t=S.settings.tema;if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);else document.documentElement.removeAttribute('data-theme')}
+const TABS=[['panel','Panel','Panel'],['captura','Captura','Captura'],['cuentas','Cuentas','Cuentas'],['nomina','Nómina y banco','Nómina'],['datos','Datos y ajustes','Ajustes']];
+function icon(n){const P={panel:'M4 20V10M10 20V4M16 20v-7M22 20H2',captura:'M12 5v14M5 12h14',cuentas:'M3 6h18v12H3zM3 10h18M7 15h4',nomina:'M6 3h9l4 4v14H6zM9 12h7M9 16h7',datos:'M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6'};
+  return sv('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':1.8,'stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true'},sv('path',{d:P[n]}))}
+function render(){
+  applyTheme();window._cards=[];
+  $('#tools').replaceChildren(h('button',{class:'btn',onclick:()=>{S.settings.ocultar=!S.settings.ocultar;commit()},'aria-pressed':String(!!S.settings.ocultar)},S.settings.ocultar?'👁 Mostrar montos':'🙈 Ocultar montos'));
+  $('#tabs').replaceChildren(...TABS.map(t=>h('button',{role:'tab','aria-selected':String(tab===t[0]),onclick:()=>{tab=t[0];render();window.scrollTo(0,0)}},h('span',{class:'ic'},icon(t[0])),h('span',{class:'lg'},t[1]),h('span',{class:'sm'},t[2]))));
+  const v=$('#view');v.replaceChildren(tab==='panel'?viewPanel():tab==='captura'?viewCaptura():tab==='cuentas'?viewCuentas():tab==='nomina'?viewNomina():viewDatos());
+  hideTip();(window._cards||[]).forEach(c=>c._paint());
+}
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{if(tab==='panel'||tab==='nomina')render()},180)});
+if(BUILD_MOVIL){const lk=document.querySelector('.lock');if(lk)lk.textContent='🔒 Sin conexión: tus datos solo viven en este teléfono.'}
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&BUILD_MOVIL){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+window.__app={get S(){return S},analyze:()=>analyze(S,TODAY),setTab:t=>{tab=t;render()}};
+render();
+})();
+</script>
+</body>
+</html>

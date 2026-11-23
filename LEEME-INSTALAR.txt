@@ -1,0 +1,56 @@
+GESTOR DE GASTOS - VERSION PARA EL TELEFONO (icono en pantalla de inicio)
+
+Esta carpeta NO contiene ningun dato tuyo: ni recibos, ni estados de cuenta, ni cifras.
+Tus capturas y proyecciones viven solo en la memoria del navegador de tu telefono.
+Lo unico que se publica es la aplicacion vacia.
+
+PASO 1 - Ponerla en una direccion web (una sola vez, gratis)
+Elige UNA opcion:
+
+  A) Netlify Drop (la mas rapida)
+     1. Entra a app.netlify.com/drop
+     2. Arrastra esta carpeta completa (con todos sus archivos).
+     3. Crea una cuenta gratuita cuando te lo pida para que el sitio no caduque.
+     4. Copia la direccion que te da (algo como https://nombre-raro.netlify.app).
+        Puedes cambiar el nombre a uno dificil de adivinar.
+
+  B) GitHub Pages
+     1. Crea un repositorio nuevo en github.com y sube todos los archivos de esta carpeta.
+     2. En Settings > Pages elige la rama principal y la carpeta raiz.
+     3. Tu direccion sera https://TU-USUARIO.github.io/NOMBRE-DEL-REPO/
+
+  C) Cloudflare Pages: crear proyecto "Direct upload" y subir la carpeta.
+
+  Nota: cualquiera que conozca la direccion podria abrir la app, pero la vera VACIA.
+  Tus datos nunca salen del telefono.
+
+PASO 2 - Instalar el icono en el telefono
+  iPhone:  abre la direccion en Safari > boton Compartir > "Agregar a inicio".
+           IMPORTANTE: captura siempre desde ese icono. Safari y el icono guardan
+           los datos por separado.
+  Android: abre la direccion en Chrome > menu (tres puntos) > "Instalar app"
+           (o "Agregar a la pantalla de inicio").
+
+  Despues de abrirla una vez con internet, funciona sin conexion.
+
+PASO 3 - Uso diario
+  - Pestana Captura: monto, cuenta (Banamex, Nu, Plata, Efectivo), concepto, categoria.
+  - Pestana Cuentas: cargos por cuenta y por mes; toca una cuenta para filtrar.
+  - Pestana Panel: proyeccion que genera la computadora.
+
+SINCRONIZAR CON LA COMPUTADORA
+  Telefono -> computadora (tus capturas):
+     Telefono: Ajustes > Sincronizar > "Generar codigo" > Copiar o Compartir (WhatsApp a ti mismo, correo, notas).
+     Computadora: Ajustes > Sincronizar > pegar el codigo > "Fusionar". No duplica ni borra.
+  Computadora -> telefono (proyecciones):
+     Computadora: Ajustes > "Llevar la proyeccion al telefono" > "Generar codigo" > copiar.
+     Telefono: Ajustes > "Recibir proyeccion" > pegar > "Recibir".
+  El codigo de proyeccion solo trae cifras agregadas (sin recibos ni movimientos).
+
+ACTUALIZAR LA APP MAS ADELANTE
+  Reemplaza index.html por la version nueva y cambia en sw.js la linea
+  const V='gastos-v1';  por  const V='gastos-v2';  (y asi sucesivamente). Vuelve a subir la carpeta.
+  Tus datos del telefono no se pierden.
+
+RESPALDO
+  En Ajustes > "Exportar respaldo (JSON)" de vez en cuando.
