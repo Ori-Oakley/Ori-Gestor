@@ -867,61 +867,39 @@ function viewCuentas(){
    RESUMEN PARA EL TELÉFONO (la computadora lo genera; el teléfono lo muestra)
    ===================================================================== */
 function buildResumen(){
-  const keep=S.settings.horizonte;
-  S.settings.horizonte=6;const A6=analyze(S,TODAY);S.settings.horizonte=keep;
-  const A=analyze(S,TODAY),M=A6.M,ind=A.ind;
-  const pick=a=>a.map(r=>({mk:r.mk,inc:r.inc,exp:r.exp,flow:r.flow,saldo:r.saldo,rec:r.rec,cons:r.cons,deu:r.deu}));
+  const A=analyze(S,TODAY),M=A.M,ind=A.ind;
+  const pick=a=>a.slice(0,2).map(r=>({mk:r.mk,inc:r.inc,exp:r.exp,flow:r.flow,saldo:r.saldo,rec:r.rec,cons:r.cons,deu:r.deu}));
   const st=x=>x?{level:x.level,icon:x.icon,label:x.label}:null;
-  const cats=Object.keys(M.catAvg).map(id=>({n:catName(id),v:Math.round(M.catAvg[id])})).filter(c=>c.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
-  return{v:1,gen:iso(TODAY),conf:M.conf,nFit:M.nFit,saldoSet:!!M.saldoSet,saldo:M.saldoSet?M.saldo:null,recMonthly:M.recMonthly,horizonte:keep,
-    base:pick(A6.base),cons:pick(A6.cons),opt:pick(A6.opt),
-    hist:M.hist.slice(-6).map(r=>({mk:r.mk,inc:r.incRec,exp:r.expBase})),
-    ind:{n:ind.n,tasa:ind.tasa,tasaS:st(ind.tasaS),avgInc:ind.avgInc,avgExp:ind.avgExp,expTrend:ind.expTrend,expTrendS:st(ind.expTrendS),incTrend:ind.incTrend,incTrendS:st(ind.incTrendS),colchon:ind.colchon,colchonS:st(ind.colchonS),cargaFija:ind.cargaFija,cargaFijaS:st(ind.cargaFijaS),debtShare:ind.debtShare,debtS:st(ind.debtS),horm:ind.horm,hormS:st(ind.hormS),global:st(ind.global)},
-    alts:A.alts.filter(a=>a.mod).slice(0,5).map(a=>({titulo:a.titulo,detalle:a.detalle,ahorro:a.ahorro,saldoFin:a.saldoFin,rec:!!a.recomendada,dif:a.dif})),
-    infos:A.alts.filter(a=>a.info).slice(0,3).map(a=>({titulo:a.titulo,detalle:a.detalle})),
-    diag:A.diag.slice(0,6),cats}}
+  return{v:1,gen:iso(TODAY),conf:M.conf,nFit:M.nFit,saldoSet:!!M.saldoSet,saldo:M.saldoSet?M.saldo:null,
+    base:pick(A.base),cons:pick(A.cons),opt:pick(A.opt),
+    ind:{tasa:ind.tasa,tasaS:st(ind.tasaS),expTrend:ind.expTrend,expTrendS:st(ind.expTrendS),cargaFija:ind.cargaFija,cargaFijaS:st(ind.cargaFijaS),global:st(ind.global)}}}
 function viewPanelMovil(){
   const R=S.resumen,root=h('div',{class:'stack'});
-  if(!R){return h('section',{class:'card'},h('h3',{},'Aún no hay proyección en el teléfono'),h('div',{class:'desc'},'El análisis riguroso vive en la computadora. Allí, en "Ajustes" → "Llevar la proyección al teléfono", genera un código y pégalo aquí en "Ajustes" → "Recibir proyección". Mientras tanto puedes capturar gastos e ingresos.'),
-    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},h('button',{class:'btn primary',onclick:()=>{tab='captura';render()}},'Ir a Captura rápida'),h('button',{class:'btn',onclick:()=>{tab='datos';render()}},'Recibir proyección')))}
-  const st=S.settings,hz=st.horizonte||3,esc=st.escenario||'base';
-  const main=R[esc].slice(0,hz+1),end=main[main.length-1];
+  if(!R||!R.base||!R.base.length)return h('section',{class:'card'},h('h3',{},'Aún no hay proyección en el teléfono'),h('div',{class:'desc'},'La proyección mensual se genera en la computadora. Allí, en "Ajustes" → "Llevar la proyección al teléfono", genera un código y pégalo aquí en "Ajustes" → "Recibir proyección". Mientras tanto puedes capturar gastos e ingresos.'),
+    h('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},h('button',{class:'btn primary',onclick:()=>{tab='captura';render()}},'Ir a Captura rápida'),h('button',{class:'btn',onclick:()=>{tab='datos';render()}},'Recibir proyección')));
+  const st=S.settings,esc=st.escenario||'base',mk=curMes(),I=R.ind||{};
+  const arr=R[esc]||R.base,k=arr.findIndex(r=>r.mk===mk),cur=k>=0?arr[k]:null,nxt=k>=0?arr[k+1]:null;
   const dias=Math.round((TODAY-parse(R.gen))/864e5);
-  root.append(banner(dias>14?'':'info',h('b',{},'Proyección de la computadora · '+fdate(R.gen)+'. '),'Confianza '+R.conf+' ('+R.nFit+' meses de gasto completos). '+(dias>14?'Tiene '+dias+' días: actualízala desde la computadora. ':'')+'No incluye lo que hayas capturado después en el teléfono.'));
-  root.append(h('div',{class:'filters'},
-    h('div',{class:'grp'},h('label',{class:'t'},'Horizonte'),seg([[3,'3 meses'],[4,'4'],[5,'5'],[6,'6 meses']],hz,v=>{st.horizonte=v;commit()},'Horizonte')),
-    h('div',{class:'grp'},h('label',{class:'t'},'Escenario'),seg([['cons','Conservador'],['base','Base'],['opt','Optimista']],esc,v=>{st.escenario=v;commit()},'Escenario'))));
-  /* este mes en el teléfono */
-  const mk=curMes(),capt=sum(S.gastos.filter(g=>g.fecha.slice(0,7)===mk&&g.cat!=='deudas'&&!g.nr&&!g.rec).map(g=>g.monto));
-  const pr=R.base[0]&&R.base[0].mk===mk?R[esc][0].cons:null;
-  if(pr!=null||capt>0)root.append(h('section',{class:'card'},h('h3',{},'Este mes en el teléfono'),h('div',{class:'desc'},'Consumo variable capturado (sin pagos de tarjeta, recurrentes ni extraordinarios) contra lo que proyectó la computadora para '+mkLong(mk)+'.'),
-    h('div',{style:'display:flex;justify-content:space-between;gap:10px;align-items:baseline'},h('span',{class:'val',style:'font-size:26px;font-weight:600'},fm(capt)),h('span',{class:'muted'},pr!=null?'de '+fm(pr)+' proyectado':'sin proyección para este mes')),
-    pr>0?h('div',{class:'trk',style:'height:10px;background:var(--wash);border-radius:5px;margin-top:8px;overflow:hidden'},h('div',{style:'height:10px;border-radius:0 4px 4px 0;background:'+(capt>pr?'var(--crit)':'var(--c-gas)')+';width:'+Math.min(100,100*capt/pr)+'%'})):null,
+  if(!cur)root.append(banner('',h('b',{},'Proyección desactualizada. '),'La que tienes en el teléfono es de '+fdate(R.gen)+' y no cubre '+mkLong(mk)+'. Genera una nueva en la computadora.'));
+  else root.append(banner(dias>14?'':'info',h('b',{},'Proyección mensual de la computadora · '+fdate(R.gen)+'. '),'Confianza '+R.conf+'. '+(dias>14?'Tiene '+dias+' días: conviene actualizarla. ':'')+'No incluye lo capturado después en el teléfono. Las demás proyecciones están en la computadora.'));
+  root.append(h('div',{class:'filters'},h('div',{class:'grp'},h('label',{class:'t'},'Escenario'),seg([['cons','Conservador'],['base','Base'],['opt','Optimista']],esc,v=>{st.escenario=v;commit()},'Escenario')),I.global?h('div',{class:'grp'},h('label',{class:'t'},'Situación general'),chip(I.global)):null));
+  /* consumo variable capturado vs proyectado */
+  const capt=sum(S.gastos.filter(g=>g.fecha.slice(0,7)===mk&&g.cat!=='deudas'&&!g.nr&&!g.rec).map(g=>g.monto)),pr=cur?cur.cons:null;
+  if(pr!=null||capt>0)root.append(h('section',{class:'card'},h('h3',{},'Este mes en el teléfono'),h('div',{class:'desc'},'Consumo variable capturado (sin pagos de tarjeta, recurrentes ni extraordinarios) contra lo proyectado para '+mkLong(mk)+'.'),
+    h('div',{style:'display:flex;justify-content:space-between;gap:10px;align-items:baseline'},h('span',{style:'font-size:26px;font-weight:600'},fm(capt)),h('span',{class:'muted'},pr!=null?'de '+fm(pr)+' proyectado':'sin proyección para este mes')),
+    pr>0?h('div',{style:'height:10px;background:var(--wash);border-radius:5px;margin-top:8px;overflow:hidden'},h('div',{style:'height:10px;border-radius:0 4px 4px 0;background:'+(capt>pr?'var(--crit)':'var(--c-gas)')+';width:'+Math.min(100,100*capt/pr)+'%'})):null,
     pr>0?h('div',{class:'muted',style:'margin-top:6px;font-size:12px'},capt>pr?'Ya rebasaste lo proyectado ('+pc(capt/pr)+').':'Llevas '+pc(capt/pr)+' de lo proyectado.'):null));
-  root.append(h('div',{class:'card hero'},h('div',{},h('div',{class:'lbl'},(R.saldoSet?'Saldo proyectado':'Flujo acumulado proyectado')+' al cierre de '+mkLong(end.mk)+' · '+(esc==='cons'?'conservador':esc==='opt'?'optimista':'base')),h('div',{class:'big',style:end.saldo<0?'color:var(--crit)':''},fm(end.saldo))),
-    h('div',{class:'note'},h('div',{},'Rango: '+fm(R.cons[hz].saldo)+' a '+fm(R.opt[hz].saldo)),h('div',{},'Flujo mensual proyectado: '+fm(avg(main.slice(1).map(r=>r.flow)))))));
-  const I=R.ind,ch=x=>x?chip(x):null;
-  root.append(h('div',{class:'grid g2 gacc'},
-    tile('Tasa de ahorro',I.tasa==null?'—':pc(I.tasa),'Flujo '+fm(I.avgInc!=null?I.avgInc-I.avgExp:null)+' / mes',I.tasaS),
-    tile('Tendencia de gastos',I.expTrend==null?'—':(I.expTrend>=0?'+':'')+(100*I.expTrend).toFixed(1)+'% /mes','Meses completos',I.expTrendS),
-    tile('Tendencia de ingresos',I.incTrend==null?'—':(I.incTrend>=0?'+':'')+(100*I.incTrend).toFixed(1)+'%','4 sem. vs. 8 previas',I.incTrendS),
-    tile('Colchón',I.colchon==null?'—':I.colchon.toFixed(1)+' meses',R.saldoSet?'Saldo '+fm(R.saldo):'Sin saldo capturado',I.colchonS),
-    tile('Compromisos fijos',I.cargaFija==null?'—':pc(I.cargaFija),fm(R.recMonthly)+' al mes del ingreso',I.cargaFijaS),
-    tile('Pagos de tarjetas',I.debtShare==null?'—':pc(I.debtShare),'De tus egresos de cuenta',I.debtS)));
-  const W=R.hist.length,all=R.hist.map(r=>({mk:r.mk})).concat(main.map(r=>({mk:r.mk}))),nul=R.hist.map(()=>null);
-  const labels=all.map((r,i)=>mkLabel(r.mk,i===0||r.mk.endsWith('-01'))),longs=all.map(r=>mkLong(r.mk));
-  const inc=R.hist.map(r=>r.inc).concat(main.map(r=>r.inc)),exp=R.hist.map(r=>r.exp).concat(main.map(r=>r.exp));
-  root.append(chartCard({title:'Ingresos y gastos',desc:'Historial y proyección (escenario '+esc+'); la franja va del optimista al conservador.',legend:[{name:'Ingresos',color:cssv('c-ing'),line:1},{name:'Gastos',color:cssv('c-gas'),line:1}],
-    draw:host=>lineChart(host,{labels,labelsLong:longs,split:W-1,h:240,aria:'Ingresos y gastos con proyección',series:[{name:'Ingresos',color:cssv('c-ing'),values:inc},{name:'Gastos',color:cssv('c-gas'),values:exp,band:{lo:nul.concat(R.opt.slice(0,hz+1).map(r=>r.exp)),hi:nul.concat(R.cons.slice(0,hz+1).map(r=>r.exp))}}]}),
-    table:()=>tableOf(longs,['Ingresos','Gastos'],all.map((r,i)=>[fm(inc[i]),fm(exp[i])]))}));
-  root.append(chartCard({title:R.saldoSet?'Saldo proyectado':'Flujo acumulado proyectado',desc:'Al cierre de cada mes; la franja va del conservador al optimista.',legend:[{name:R.saldoSet?'Saldo':'Flujo acumulado',color:cssv('c-sal'),line:1}],
-    draw:host=>lineChart(host,{labels:main.map((r,i)=>mkLabel(r.mk,i===0||r.mk.endsWith('-01'))),labelsLong:main.map(r=>mkLong(r.mk)),split:null,h:240,aria:'Saldo proyectado por mes',series:[{name:R.saldoSet?'Saldo':'Flujo acumulado',color:cssv('c-sal'),values:main.map(r=>r.saldo),band:{lo:R.cons.slice(0,hz+1).map(r=>r.saldo),hi:R.opt.slice(0,hz+1).map(r=>r.saldo)}}]}),
-    table:()=>tableOf(main.map(r=>mkLong(r.mk)),['Conservador','Seleccionado','Optimista'],main.map((r,i)=>[fm(R.cons[i].saldo),fm(r.saldo),fm(R.opt[i].saldo)]))}));
-  root.append(h('section',{class:'card'},h('div',{style:'display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center'},h('h3',{},'Diagnóstico del analista'),ch(I.global)),h('div',{class:'stack',style:'margin-top:10px'},R.diag.map(t=>h('p',{style:'margin:0'},t)))));
-  if(R.alts.length||R.infos.length)root.append(h('section',{class:'card'},h('h3',{},'Alternativas'),h('div',{class:'desc'},'Para aplicarlas y ver su efecto en el gráfico, usa la computadora. Ahorro mensual y saldo a '+(R.horizonte||3)+' meses.'),
-    R.alts.map(a=>h('div',{class:'alt',style:'grid-template-columns:1fr auto'},h('div',{},h('h4',{},a.titulo),h('p',{},a.detalle),h('div',{class:'meta'},a.rec?h('span',{class:'pill rec'},'Recomendada'):null,h('span',{class:'pill'},'Esfuerzo: '+['','bajo','medio','alto'][a.dif]))),h('div',{class:'imp'},h('b',{},fm(a.ahorro)),h('span',{},'al mes'),h('span',{},'saldo final '+fm(a.saldoFin))))),
-    R.infos.map(a=>h('div',{class:'alt',style:'grid-template-columns:1fr'},h('div',{},h('h4',{},a.titulo),h('p',{},a.detalle))))));
-  if(R.cats&&R.cats.length)root.append(h('section',{class:'card'},h('h3',{},'Gasto por categoría'),h('div',{class:'desc'},'Promedio mensual de los meses completos.'),R.cats.map(c=>h('div',{class:'hbar'},h('div',{class:'nm',title:c.n},c.n),h('div',{class:'trk'},h('div',{class:'fill',style:'width:'+Math.max(2,100*c.v/R.cats[0].v)+'%'})),h('div',{class:'vl'},h('b',{},fm(c.v)))))));
+  const mesCard=(r,t)=>h('section',{class:'card'},h('h3',{},t+' · '+mkLong(r.mk)),h('div',{class:'desc'},'Escenario '+(esc==='cons'?'conservador':esc==='opt'?'optimista':'base')),
+    h('div',{class:'hero',style:'margin-bottom:8px'},h('div',{},h('div',{class:'lbl'},'Flujo del mes (ingresos − gastos)'),h('div',{class:'big',style:'font-size:40px;'+(r.flow<0?'color:var(--crit)':'')},fm(r.flow)))),
+    h('table',{class:'t'},h('tbody',{},
+      [['Ingresos',r.inc],['Gastos',r.exp],['· Pagos recurrentes',r.rec],['· Consumo variable',r.cons],['· Abonos a tarjetas',r.deu]].map(x=>h('tr',{},h('td',{},x[0]),h('td',{},fm(x[1])))),
+      R.saldoSet?h('tr',{},h('td',{},h('b',{},'Saldo al cierre')),h('td',{},h('b',{style:r.saldo<0?'color:var(--crit)':''},fm(r.saldo)))):null)));
+  if(cur)root.append(mesCard(cur,'Este mes'));
+  if(nxt)root.append(mesCard(nxt,'Mes siguiente'));
+  if(I.tasa!=null||I.expTrend!=null||I.cargaFija!=null)root.append(h('div',{class:'grid g2 gacc'},
+    tile('Tasa de ahorro',I.tasa==null?'—':pc(I.tasa),null,I.tasaS),
+    tile('Tendencia de gastos',I.expTrend==null?'—':(I.expTrend>=0?'+':'')+(100*I.expTrend).toFixed(1)+'% /mes',null,I.expTrendS),
+    tile('Compromisos fijos',I.cargaFija==null?'—':pc(I.cargaFija),'Del ingreso',I.cargaFijaS)));
   return root}
 
 /* =====================================================================
@@ -1050,7 +1028,7 @@ function viewDatos(){
       navigator.share?h('button',{class:'btn',type:'button',onclick:()=>{if(!ta.value)return toast('Primero genera el código');navigator.share({title:label,text:ta.value}).catch(()=>{})}},'Compartir…'):null,
       h('button',{class:'btn',type:'button',onclick:()=>{if(!ta.value)return toast('Primero genera el código');download('proyeccion-telefono.txt',ta.value,'text/plain')}},'Descargar archivo')),ta)};
   const encP=o=>'GP1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o,(k,v)=>typeof v==='number'?(Math.abs(v)>=100?Math.round(v):Math.round(v*10000)/10000):v))));
-  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Llevar la proyección al teléfono'),h('div',{class:'desc'},'Genera un resumen con las proyecciones más relevantes (3 a 6 meses, tres escenarios, indicadores, diagnóstico y alternativas). Solo contiene cifras agregadas, no recibos ni movimientos. Pégalo en el teléfono, en "Ajustes" → "Recibir proyección".'),codeBox('Proyección',()=>encP(buildResumen()))));
+  if(!BUILD_MOVIL)root.append(h('section',{class:'card'},h('h3',{},'Llevar la proyección al teléfono'),h('div',{class:'desc'},'Genera un resumen con la proyección mensual (mes en curso y siguiente, tres escenarios y tres indicadores). Las proyecciones a 3-6 meses, gráficos y alternativas se quedan en la computadora. Solo contiene cifras agregadas, no recibos ni movimientos. Pégalo en el teléfono, en "Ajustes" → "Recibir proyección".'),codeBox('Proyección',()=>encP(buildResumen()))));
   if(BUILD_MOVIL){
     const inp=h('textarea',{class:'synctxt',rows:4,placeholder:'Pega aquí el código de proyección generado en la computadora'});
     const fileP=h('input',{type:'file',accept:'.txt,text/plain',onchange:e=>{const fl=e.target.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{inp.value=String(rd.result)};rd.readAsText(fl)}});
